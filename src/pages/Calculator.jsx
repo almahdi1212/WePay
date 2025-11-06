@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   FaCalculator,
@@ -19,41 +19,69 @@ export default function Calculator() {
   const [items, setItems] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [exchangeRate, setExchangeRate] = useState(6.8);
+  const [shippingRate, setShippingRate] = useState(12); // ⬅️ السعر من API (مخفي)
 
-  const exchangeRate = 6.8;
+  // 🔹 جلب البيانات من الـ APIs (التصنيفات + سعر الصرف + سعر الشحن)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [categoriesRes, rateRes, shippingRes] = await Promise.all([
+          fetch("http://127.0.0.1:8000/api/categories"),
+          fetch("http://127.0.0.1:8000/api/exchange-rate"),
+          fetch("http://127.0.0.1:8000/api/shipping-rate"),
+        ]);
 
-  const weights = {
-    "احذية": 0.6,
-    "اكسسوارات خفيفة": 0.03,
-    "أكواب (رفق)": 0.25,
-    "بيجامة قطعتين": 0.3,
-    "تحف": 0.3,
-    "تيشيرت": 0.2,
-    "جاكيت": 0.8,
-    "جوارب": 0.02,
-    "خواتم وسلاسل وحدايد": 0.03,
-    "سروال": 0.5,
-    "سروال جينز": 0.6,
-    "شنشب منزل": 0.2,
-    "عباية": 0.6,
-    "غطاء سرير": 0.8,
-    "فستان": 0.3,
-    "فستان سهرة خفيفة": 0.3,
-    "فوانيس ديكورية": 0.5,
-    "كريمات": 0.04,
-    "ملابس أطفال": 0.3,
-    "منشفة": 0.3,
-    "ميزان": 1.0,
-  };
+        const categoriesData = await categoriesRes.json();
+        const rateData = await rateRes.json();
+        const shippingData = await shippingRes.json();
 
+        if (Array.isArray(categoriesData)) {
+          setCategories(categoriesData);
+        } else if (categoriesData.data) {
+          setCategories(categoriesData.data);
+        }
+
+        if (rateData.rate) {
+          setExchangeRate(rateData.rate);
+        } else if (rateData.data?.rate) {
+          setExchangeRate(rateData.data.rate);
+        }
+
+        if (shippingData.rate_per_kg) {
+          setShippingRate(shippingData.rate_per_kg); // ✅ يتم تخزينها داخليًا فقط
+        }
+      } catch {
+        // fallback بدون أي إشعارات
+        setCategories([
+          { id: 1, name: "تيشيرت", approx_weight: 0.2 },
+          { id: 2, name: "سروال", approx_weight: 0.5 },
+          { id: 3, name: "أحذية", approx_weight: 0.6 },
+        ]);
+        setExchangeRate(6.8);
+        setShippingRate(12);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // ➕ إضافة صنف
   const handleAddItem = () => {
     if (!itemType || !itemCount) {
       setError("الرجاء اختيار الصنف وتحديد عدد القطع.");
       return;
     }
 
+    const selected = categories.find((cat) => cat.name === itemType);
+    if (!selected) {
+      setError("حدث خطأ أثناء اختيار الصنف.");
+      return;
+    }
+
     const count = parseInt(itemCount);
-    const weight = weights[itemType] * count;
+    const weight = selected.approx_weight * count;
     const newItem = { type: itemType, count, weight };
     setItems([...items, newItem]);
     setItemType("");
@@ -61,11 +89,12 @@ export default function Calculator() {
     setError("");
   };
 
+  // ❌ حذف صنف
   const handleDeleteItem = (index) => {
-    const updatedItems = items.filter((_, i) => i !== index);
-    setItems(updatedItems);
+    setItems(items.filter((_, i) => i !== index));
   };
 
+  // 🧮 الحساب
   const handleCalculate = () => {
     setError("");
     setResult(null);
@@ -77,7 +106,10 @@ export default function Calculator() {
 
     const usd = parseFloat(usdPrice);
     const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
-    const shippingCost = totalWeight * 12;
+
+    // ✅ الآن تكلفة الشحن تعتمد على سعر الشحن من الـ API وليس رقم ثابت
+    const shippingCost = totalWeight * shippingRate;
+
     const priceLYD = usd * exchangeRate;
     const total = priceLYD + shippingCost;
 
@@ -126,10 +158,6 @@ export default function Calculator() {
             50% { background-position: 100% center; }
             100% { background-position: 0% center; }
           }
-          @keyframes glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(233,171,29,0.4); }
-            50% { box-shadow: 0 0 25px rgba(233,171,29,0.6); }
-          }
         `}
       </style>
 
@@ -177,9 +205,9 @@ export default function Calculator() {
             className="flex-1 p-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E9AB1D] text-sm"
           >
             <option value="">اختر الصنف...</option>
-            {Object.keys(weights).map((key) => (
-              <option key={key} value={key}>
-                {key} ({weights[key]} كجم)
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>
+                {cat.name} ({cat.approx_weight} كجم)
               </option>
             ))}
           </select>
@@ -256,7 +284,8 @@ export default function Calculator() {
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.2, delayChildren: 0.2 }}
           >
-            {[{
+            {[
+              {
                 icon: <FaMoneyBillWave />,
                 label: "سعر السلة بالدينار",
                 value: `${result.priceLYD} LYD`,
@@ -270,7 +299,8 @@ export default function Calculator() {
                 icon: <FaTruck style={{ transform: "scaleX(-1)" }} />,
                 label: "تكلفة الشحن",
                 value: `${result.shippingCost} LYD`,
-              }].map((item, index) => (
+              },
+            ].map((item, index) => (
               <motion.div
                 key={index}
                 className="p-5 bg-gradient-to-r from-[#fff9ef] to-[#fff3d2] rounded-2xl shadow-sm border border-[#E9AB1D]/40 flex flex-col items-center justify-center"

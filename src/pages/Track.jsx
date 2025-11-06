@@ -15,6 +15,37 @@ export default function Track() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 🧭 خريطة الحالات (status_code → التفاصيل)
+  const statusMap = {
+    1: {
+      status: "تم استلام الشحنة من المتجر",
+      description: "تم استلام طلبك من المتجر وهو الآن في مرحلة التحضير للشحن.",
+      icon: <FaBoxOpen />,
+      date: "25 أكتوبر 2025",
+    },
+    2: {
+      status: "الشحنة غادرت المستودع",
+      description:
+        "تم تجهيز الشحنة وشحنها من المستودع الرئيسي متجهة إلى مركز التوزيع.",
+      icon: <FaTruck />,
+      date: "26 أكتوبر 2025",
+    },
+    3: {
+      status: "في الطريق إلى طرابلس",
+      description:
+        "الشحنة الآن في الطريق، سيتم تحديث الحالة فور وصولها إلى وجهتها.",
+      icon: <FaClock />,
+      date: "27 أكتوبر 2025",
+    },
+    4: {
+      status: "تم تسليم الشحنة بنجاح",
+      description: "تم تسليم الشحنة إلى العميل بنجاح. شكراً لاستخدامك We Pay.",
+      icon: <FaCheckCircle />,
+      date: "28 أكتوبر 2025",
+    },
+  };
+
+  // 🛰️ جلب بيانات الشحنة من الـ API
   const handleSearch = async () => {
     setError("");
     setShipment(null);
@@ -26,57 +57,46 @@ export default function Track() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      const code = trackingNumber.trim().toUpperCase();
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/shipments/${trackingNumber.trim()}`
+      );
+      const data = await res.json();
 
-      const shipments = {
-        WP123: { number: "WP123", status: "تم تسليم الشحنة بنجاح", activeStep: 4 },
-        WP456: { number: "WP456", status: "في الطريق إلى طرابلس", activeStep: 3 },
-        WP789: { number: "WP789", status: "الشحنة غادرت المستودع", activeStep: 2 },
-        WP999: { number: "WP999", status: "تم استلام الشحنة من المتجر", activeStep: 1 },
-      };
-
-      if (shipments[code]) {
-        const baseHistory = [
-          {
-            id: 1,
-            status: "تم استلام الشحنة من المتجر",
-            date: "25 أكتوبر 2025",
-            icon: <FaBoxOpen />,
-            description: "تم استلام طلبك من المتجر وهو الآن في مرحلة التحضير للشحن.",
-          },
-          {
-            id: 2,
-            status: "الشحنة غادرت المستودع",
-            date: "26 أكتوبر 2025",
-            icon: <FaTruck />,
-            description: "تم تجهيز الشحنة وشحنها من المستودع الرئيسي متجهة إلى مركز التوزيع.",
-          },
-          {
-            id: 3,
-            status: "في الطريق إلى طرابلس",
-            date: "27 أكتوبر 2025",
-            icon: <FaClock />,
-            description: "الشحنة الآن في الطريق، سيتم تحديث الحالة فور وصولها إلى وجهتها.",
-          },
-          {
-            id: 4,
-            status: "تم تسليم الشحنة بنجاح",
-            date: "28 أكتوبر 2025",
-            icon: <FaCheckCircle />,
-            description: "تم تسليم الشحنة إلى العميل بنجاح. شكراً لاستخدامك We Pay.",
-          },
-        ];
-
-        const data = shipments[code];
-        const partialHistory = baseHistory.slice(0, data.activeStep);
-        setShipment({ ...data, history: partialHistory });
-      } else {
+      if (!data.success) {
         setError("لم يتم العثور على الشحنة 😔");
+      } else {
+        setShipment(data);
       }
+    } catch (e) {
+      setError("حدث خطأ أثناء الاتصال بالخادم.");
+    }
 
-      setLoading(false);
-    }, 1000);
+    setLoading(false);
+  };
+
+  // ⏱️ توليد المراحل بناءً على status_code
+  const buildHistory = (statusCode) => {
+    return Object.entries(statusMap)
+      .filter(([key]) => Number(key) <= statusCode)
+      .map(([key, val]) => ({
+        id: Number(key),
+        ...val,
+      }));
+  };
+
+  // ✨ إعدادات الأنيميشن العامة
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        delay: i * 0.25,
+        ease: "easeOut",
+      },
+    }),
   };
 
   return (
@@ -166,7 +186,7 @@ export default function Track() {
             <FaSearch className="absolute text-[#1A1A1A]/60 text-xl sm:text-2xl top-1 left-1/2 -translate-x-1/2" />
           </div>
           <h3 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">
-            لم يتم العثور على الشحنة
+            {error}
           </h3>
           <p className="text-gray-700 text-sm sm:text-lg max-w-md px-2">
             تحقق من رقم الشحنة وأعد المحاولة.
@@ -177,18 +197,19 @@ export default function Track() {
       {/* تفاصيل الشحنة */}
       {shipment && (
         <motion.div
-          className="mt-10 sm:mt-12 bg-white rounded-3xl shadow-lg p-6 sm:p-8 border border-[#E9AB1D]/30 text-right"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+          className="mt-10 sm:mt-12 bg-white rounded-3xl shadow-lg p-6 sm:p-8 border border-[#E9AB1D]/30 text-right transition-transform duration-500"
+          whileHover={{ rotateX: 4, rotateY: -4, scale: 1.02 }}
+          initial="hidden"
+          animate="visible"
+          transition={{ staggerChildren: 0.15 }}
         >
           <h2 className="text-xl sm:text-2xl font-bold text-[#E9AB1D] mb-4 text-center">
-            رقم الشحنة: {shipment.number}
+            رقم الشحنة: {shipment.tracking_number}
           </h2>
           <p className="text-base sm:text-lg text-gray-700 mb-8 sm:mb-10 text-center">
             الحالة الحالية:{" "}
             <span className="font-semibold text-[#1A1A1A]">
-              {shipment.status}
+              {statusMap[shipment.status_code]?.status}
             </span>
           </p>
 
@@ -196,27 +217,30 @@ export default function Track() {
           <div className="relative pr-6 sm:pr-10">
             <div className="absolute right-[12px] sm:right-[16px] top-0 bottom-0 w-[2px] sm:w-[3px] bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] rounded-full"></div>
 
-            {shipment.history.map((step, index) => (
+            {buildHistory(shipment.status_code).map((step, index) => (
               <motion.div
                 key={step.id}
                 className="relative mb-8 sm:mb-10 pl-6 sm:pl-8"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
+                variants={fadeUpVariants}
+                initial="hidden"
+                animate="visible"
+                custom={index}
               >
+                {/* الأيقونة */}
                 <div
                   className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-white text-base sm:text-lg shadow-md border-2 border-white ${
-                    index === shipment.history.length - 1
-                      ? "bg-gradient-to-b from-[#E9AB1D] to-[#c98a00]"
+                    index === buildHistory(shipment.status_code).length - 1
+                      ? "bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] animate-pulse"
                       : "bg-gray-300"
                   }`}
                 >
                   {step.icon}
                 </div>
 
+                {/* النصوص */}
                 <div
                   className={`mr-8 sm:mr-10 p-4 sm:p-5 rounded-2xl transition-all duration-300 ${
-                    index === shipment.history.length - 1
+                    index === buildHistory(shipment.status_code).length - 1
                       ? "bg-gradient-to-r from-[#fff9ef] to-[#fff3d2] border border-[#E9AB1D]/40 shadow-md"
                       : "bg-gray-50 border border-gray-100 hover:shadow-md"
                   }`}

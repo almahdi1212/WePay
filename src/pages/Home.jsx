@@ -1,13 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LuMegaphone, LuTarget, LuAward } from "react-icons/lu";
 import { FaRocket } from "react-icons/fa6";
 
+/**
+ * Home.jsx
+ * الصفحة الرئيسية — متكاملة + جلب التحديثات من /api/updates
+ */
+
 export default function Home() {
+  const [updates, setUpdates] = useState([]);
+  const [loadingUpdates, setLoadingUpdates] = useState(true);
+  const [updatesError, setUpdatesError] = useState("");
+
+  useEffect(() => {
+    const fetchUpdates = async () => {
+      setLoadingUpdates(true);
+      setUpdatesError("");
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/updates");
+        const data = await res.json();
+
+        // دعم شكل الاستجابة { success: true, data: [...] } أو مصفوفة مباشرة
+        if (data === null) {
+          setUpdates([]);
+        } else if (Array.isArray(data)) {
+          setUpdates(data);
+        } else if (data.success && Array.isArray(data.data)) {
+          setUpdates(data.data);
+        } else if (data.data && Array.isArray(data.data)) {
+          setUpdates(data.data);
+        } else {
+          // محاولة استخراج إن كان هناك مفتاح باسم updates أو similar
+          const possible = data.updates || data.results || [];
+          setUpdates(Array.isArray(possible) ? possible : []);
+        }
+      } catch (err) {
+        console.error("Error fetching updates:", err);
+        setUpdatesError("حدث خطأ أثناء جلب التحديثات. حاول لاحقاً.");
+      } finally {
+        setLoadingUpdates(false);
+      }
+    };
+
+    fetchUpdates();
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 overflow-hidden">
-      {/* 🟡 القسم العلوي */}
+      {/* ===== القسم العلوي (Hero) ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
         {/* النصوص */}
         <motion.div
@@ -18,7 +61,7 @@ export default function Home() {
         >
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 leading-snug"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#1A1A1A", lineHeight: 1.05 }}
           >
             تابع شحنتك{" "}
             <span className="text-[#E9AB1D]">بسهولة وسرعة ⚡</span>
@@ -43,7 +86,7 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* 🎨 الصورة التوضيحية */}
+        {/* الصورة التوضيحية (SVG) */}
         <motion.div
           className="flex justify-center mt-8 md:mt-10"
           initial={{ opacity: 0, x: 60 }}
@@ -56,13 +99,8 @@ export default function Home() {
               viewBox="0 0 400 400"
               className="w-full h-auto"
             >
-              {/* الصندوق */}
-              <g
-                stroke="#CFCFCF"
-                strokeWidth="4"
-                fill="none"
-                transform="translate(0,20)"
-              >
+              {/* الصندوق (تصميم خطي نظيف) */}
+              <g stroke="#CFCFCF" strokeWidth="4" fill="none" transform="translate(0,20)">
                 <path d="M85 150 L200 100 L315 150 L200 200 Z" />
                 <path d="M85 150 L85 250 L200 300 L200 200 Z" />
                 <path d="M315 150 L315 250 L200 300" />
@@ -71,8 +109,8 @@ export default function Home() {
                 <path d="M215 288 L230 278" />
               </g>
 
-              {/* دبوس الموقع مع نبض */}
-              <g transform="translate(200,60)">
+              {/* دبوس الموقع مع نبض وتموضع أعلى قليلاً */}
+              <g transform="translate(200,50)">
                 <circle
                   cx="0"
                   cy="13"
@@ -81,22 +119,8 @@ export default function Home() {
                   stroke="#E9AB1D"
                   strokeWidth="3"
                 >
-                  <animate
-                    attributeName="r"
-                    from="12"
-                    to="30"
-                    dur="1.5s"
-                    begin="0s"
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="opacity"
-                    from="1"
-                    to="0"
-                    dur="1.5s"
-                    begin="0s"
-                    repeatCount="indefinite"
-                  />
+                  <animate attributeName="r" from="12" to="30" dur="1.5s" begin="0s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="1" to="0" dur="1.5s" begin="0s" repeatCount="indefinite" />
                 </circle>
 
                 <path
@@ -114,7 +138,7 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* 📢 قسم آخر التحديثات */}
+      {/* ===== آخر التحديثات (Updates) ===== */}
       <motion.section
         className="mt-12 sm:mt-16"
         initial={{ opacity: 0, y: 60 }}
@@ -129,24 +153,45 @@ export default function Home() {
           <LuMegaphone className="text-3xl sm:text-4xl" /> آخر التحديثات
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0">
-          <div className="p-5 sm:p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 text-center sm:text-right">
-            <div className="text-sm text-gray-400 mb-2">نوفمبر 2025</div>
-            <div className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
-              إطلاق نظام تتبع الشحنات الجديد بواجهة محسّنة وسرعة استجابة أعلى.
-            </div>
+        {/* loading / error / no-updates handling */}
+        {loadingUpdates ? (
+          <p className="text-center text-gray-500">جاري تحميل التحديثات...</p>
+        ) : updatesError ? (
+          <p className="text-center text-red-600">{updatesError}</p>
+        ) : updates.length === 0 ? (
+          <p className="text-center text-gray-400 italic">لا توجد تحديثات حالياً.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0">
+            {updates.map((update, index) => (
+              <motion.div
+                key={update.id ?? index}
+                className="p-5 sm:p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 text-center sm:text-right"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.18 }}
+                viewport={{ once: true }}
+              >
+                <div className="text-sm text-gray-400 mb-2">
+                  {update.date
+                    ? new Date(update.date).toLocaleDateString("ar-LY", {
+                        year: "numeric",
+                        month: "long",
+                      })
+                    : ""}
+                </div>
+                <div className="text-base sm:text-lg font-semibold text-[#1A1A1A] mb-1">
+                  {update.title}
+                </div>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {update.description}
+                </p>
+              </motion.div>
+            ))}
           </div>
-
-          <div className="p-5 sm:p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 text-center sm:text-right">
-            <div className="text-sm text-gray-400 mb-2">أكتوبر 2025</div>
-            <div className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
-              إضافة إمكانية الشراء من مواقع عالمية متعددة إلى جانب Shein.
-            </div>
-          </div>
-        </div>
+        )}
       </motion.section>
 
-      {/* 👥 قسم من نحن */}
+      {/* ===== من نحن ===== */}
       <motion.section
         className="mt-16 sm:mt-20 relative py-16 sm:py-20"
         initial={{ opacity: 0, y: 80 }}
@@ -183,7 +228,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 text-center px-2 sm:px-0">
-            {/* الرؤية */}
+            {/* بطاقة رؤيتنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -202,7 +247,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* المهمة */}
+            {/* بطاقة مهمتنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -221,7 +266,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* القيم */}
+            {/* بطاقة قيمنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -249,4 +294,3 @@ export default function Home() {
     </div>
   );
 }
-  
