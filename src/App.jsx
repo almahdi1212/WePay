@@ -15,6 +15,8 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import DashboardShipments from "./pages/dashboard/DashboardShipments";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
+import DashboardUpdates from "./pages/dashboard/DashboardUpdates";
+
 
 
 export default function App() {
@@ -79,6 +81,8 @@ export default function App() {
         <Route path="shipments" element={<DashboardShipments />} />
         
          <Route path="settings" element={<DashboardSettings />} /> {/* ✅ هنا */}
+           <Route path="updates" element={<DashboardUpdates />} /> {/* ✅ هنا */}
+
 
 
         {/* ✅ يمكن لاحقًا إضافة صفحات أخرى داخل نفس الـ Dashboard */}
