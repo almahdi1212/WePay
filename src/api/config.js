@@ -1,6 +1,6 @@
 // 📁 src/api/config.js
 
-export const API_BASE_URL = "http://127.0.0.1:8000/api";
+export const API_BASE_URL = "https://wepay-backend-y41w.onrender.com/api";
 
 // دالة عامة للطلبات GET وPOST وPUT وDELETE
 export async function apiRequest(endpoint, method = "GET", data = null) {

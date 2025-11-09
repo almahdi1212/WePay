@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { apiRequest } from "../../api/api";
 import {
   FaBox,
   FaTags,
@@ -35,7 +36,7 @@ export default function DashboardHome() {
   const [greeting, setGreeting] = useState("");
   const [emoji, setEmoji] = useState("☀️");
 
-  // تحديد التحية حسب الوقت
+  // 🕐 التحية حسب الوقت
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
@@ -50,87 +51,72 @@ export default function DashboardHome() {
     }
   }, []);
 
-  // إلغاء التوهّج بعد 2.5 ثانية
+  // ✨ إلغاء التوهّج بعد ثانيتين ونصف
   useEffect(() => {
     const timer = setTimeout(() => setGlow(false), 2500);
     return () => clearTimeout(timer);
   }, []);
 
-  // جلب بيانات لوحة التحكم + الشحنات من الـ API (مع فلوبيليتي للحالات المختلفة)
+  // 🧠 جلب بيانات لوحة التحكم
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [shipmentsRes, categoriesRes, updatesRes, rateRes, shippingRes] =
+        const [shipments, categories, updates, rate, shippingRate] =
           await Promise.all([
-            fetch("http://127.0.0.1:8000/api/shipments"),
-            fetch("http://127.0.0.1:8000/api/categories"),
-            fetch("http://127.0.0.1:8000/api/updates"),
-            fetch("http://127.0.0.1:8000/api/exchange-rate"),
-            fetch("http://127.0.0.1:8000/api/shipping-rate"),
+            apiRequest("/shipments"),
+            apiRequest("/categories"),
+            apiRequest("/updates"),
+            apiRequest("/exchange-rate"),
+            apiRequest("/shipping-rate"),
           ]);
 
-        const shipmentsJson = await shipmentsRes.json();
-        const categoriesJson = await categoriesRes.json();
-        const updatesJson = await updatesRes.json();
-        const rateJson = await rateRes.json();
-        const shippingRateJson = await shippingRes.json();
-
-        // --- مرونة في الشكل: إما { data: [...] } أو [...] مباشرة
         const shipmentsArray =
-          (shipmentsJson && shipmentsJson.data && Array.isArray(shipmentsJson.data))
-            ? shipmentsJson.data
-            : Array.isArray(shipmentsJson)
-            ? shipmentsJson
+          shipments?.data && Array.isArray(shipments.data)
+            ? shipments.data
+            : Array.isArray(shipments)
+            ? shipments
             : [];
 
         const categoriesArray =
-          (categoriesJson && categoriesJson.data && Array.isArray(categoriesJson.data))
-            ? categoriesJson.data
-            : Array.isArray(categoriesJson)
-            ? categoriesJson
+          categories?.data && Array.isArray(categories.data)
+            ? categories.data
+            : Array.isArray(categories)
+            ? categories
             : [];
 
         const updatesArray =
-          (updatesJson && updatesJson.data && Array.isArray(updatesJson.data))
-            ? updatesJson.data
-            : Array.isArray(updatesJson)
-            ? updatesJson
+          updates?.data && Array.isArray(updates.data)
+            ? updates.data
+            : Array.isArray(updates)
+            ? updates
             : [];
 
-        // إنشاء مصفوفة الشهور مرتبة من يناير إلى ديسمبر
+        // 📊 تجهيز البيانات الشهرية للرسم البياني
         const monthlyData = Array.from({ length: 12 }, (_, i) => ({
           month: new Date(0, i).toLocaleString("ar-LY", { month: "long" }),
           shipments: 0,
         }));
 
-        // عد الشحنات: نحاول استخراج التاريخ من عدة مفاتيح محتملة
         shipmentsArray.forEach((sh) => {
-          // حاول إيجاد حقل التاريخ بأي اسم معتاد
-          const dateStr = sh.created_at ?? sh.createdAt ?? sh.date ?? sh.created ?? null;
+          const dateStr =
+            sh.created_at ?? sh.createdAt ?? sh.date ?? sh.created ?? null;
           if (dateStr) {
             const date = new Date(dateStr);
             if (!isNaN(date)) {
               const idx = date.getMonth();
               monthlyData[idx].shipments++;
-            } else {
-              // إن لم يكن التاريخ صالحاً يمكن تسجيله للاطلاع (لا يؤدي لكسر التطبيق)
-              // console.warn("Invalid date for shipment:", sh);
             }
-          } else {
-            // إذا لم يوجد تاريخ نتجاهل العنصر (أو يمكنك اختيار عدّه في bucket "غير معروف")
-            // console.warn("Shipment without date field:", sh);
           }
         });
 
-        // ضمان أن chartData بترتيب شهري ثابت (يناير..ديسمبر) حتى لو لم تكن هناك بيانات
         setChartData(monthlyData);
 
         setStats({
           shipments: shipmentsArray.length || 0,
           categories: categoriesArray.length || 0,
           updates: updatesArray.length || 0,
-          exchangeRate: rateJson?.data?.rate ?? rateJson?.rate ?? 0,
-          shippingRate: shippingRateJson?.rate_per_kg ?? 0,
+          exchangeRate: rate?.data?.rate ?? rate?.rate ?? 0,
+          shippingRate: shippingRate?.rate_per_kg ?? 0,
         });
 
         const now = new Date();
@@ -153,7 +139,7 @@ export default function DashboardHome() {
     fetchDashboardData();
   }, []);
 
-  // شاشة التحميل
+  // ⏳ شاشة التحميل
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh]">
@@ -168,7 +154,7 @@ export default function DashboardHome() {
     );
   }
 
-  // حالة الخطأ
+  // ❌ حالة الخطأ
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-center">
@@ -183,7 +169,7 @@ export default function DashboardHome() {
     );
   }
 
-  // بطاقات الإحصاءات
+  // 🧩 بطاقات الإحصاءات
   const statsCards = [
     { title: "إجمالي الشحنات", value: stats.shipments, icon: <FaBox />, color: "#E9AB1D" },
     { title: "عدد الأصناف", value: stats.categories, icon: <FaTags />, color: "#c98a00" },
@@ -207,7 +193,7 @@ export default function DashboardHome() {
         </p>
       </motion.div>
 
-      {/* قسم الترحيب */}
+      {/* التحية */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -218,7 +204,9 @@ export default function DashboardHome() {
           <h2 className="text-2xl font-bold text-[#1A1A1A] mb-2 flex items-center gap-2">
             {emoji} {greeting} <span className="text-[#E9AB1D] font-semibold">Admin</span>
           </h2>
-          <p className="text-sm text-gray-600 leading-relaxed">إليك نظرة عامة على لوحة التحكم الخاصة بك لهذا اليوم.</p>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            إليك نظرة عامة على لوحة التحكم الخاصة بك لهذا اليوم.
+          </p>
         </div>
 
         <motion.div
@@ -226,7 +214,9 @@ export default function DashboardHome() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className={`mt-4 sm:mt-0 text-sm font-medium italic bg-[#fff8e0]/60 px-4 py-2 rounded-full border border-[#E9AB1D]/20 shadow-sm ${
-            glow ? "text-transparent bg-clip-text bg-gradient-to-r from-[#E9AB1D] via-[#f9d85c] to-[#c98a00] animate-[shimmer_2s_linear_infinite]" : "text-[#E9AB1D]"
+            glow
+              ? "text-transparent bg-clip-text bg-gradient-to-r from-[#E9AB1D] via-[#f9d85c] to-[#c98a00] animate-[shimmer_2s_linear_infinite]"
+              : "text-[#E9AB1D]"
           }`}
           style={{ backgroundSize: "200% auto" }}
         >
@@ -234,48 +224,54 @@ export default function DashboardHome() {
         </motion.div>
       </motion.div>
 
-{/* البطاقات مع تأثير Hover ذهبي احترافي */}
-<motion.div
-  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6"
-  initial="hidden"
-  animate="visible"
-  variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
->
-  {statsCards.map((stat, index) => (
-    <motion.div
-      key={index}
-      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-      whileHover={{
-        scale: 1.05,
-        backgroundColor: "#fffaf0",
-        boxShadow: "0 0 25px rgba(233,171,29,0.25)",
-        borderColor: "rgba(233,171,29,0.6)",
-      }}
-      transition={{ type: "spring", stiffness: 220, damping: 14 }}
-      className="bg-white border border-[#E9AB1D]/20 shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center transition-all duration-300 hover:text-[#1A1A1A]"
-    >
+      {/* البطاقات */}
       <motion.div
-        whileHover={{ scale: 1.2 }}
-        transition={{ duration: 0.3 }}
-        className="w-12 h-12 flex items-center justify-center rounded-xl mb-3 bg-[#E9AB1D]/10 text-[#E9AB1D] transition-all duration-300"
-        style={{ color: stat.color }}
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6"
+        initial="hidden"
+        animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
       >
-        {stat.icon}
+        {statsCards.map((stat, index) => (
+          <motion.div
+            key={index}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "#fffaf0",
+              boxShadow: "0 0 25px rgba(233,171,29,0.25)",
+              borderColor: "rgba(233,171,29,0.6)",
+            }}
+            transition={{ type: "spring", stiffness: 220, damping: 14 }}
+            className="bg-white border border-[#E9AB1D]/20 shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center transition-all duration-300 hover:text-[#1A1A1A]"
+          >
+            <motion.div
+              whileHover={{ scale: 1.2 }}
+              transition={{ duration: 0.3 }}
+              className="w-12 h-12 flex items-center justify-center rounded-xl mb-3 bg-[#E9AB1D]/10 text-[#E9AB1D] transition-all duration-300"
+              style={{ color: stat.color }}
+            >
+              {stat.icon}
+            </motion.div>
+            <h3 className="text-sm text-gray-600 mb-1 text-center transition-all duration-300">
+              {stat.title}
+            </h3>
+            <p className="text-2xl font-bold text-[#1A1A1A] transition-all duration-300">
+              {stat.value}
+            </p>
+          </motion.div>
+        ))}
       </motion.div>
-      <h3 className="text-sm text-gray-600 mb-1 text-center transition-all duration-300">
-        {stat.title}
-      </h3>
-      <p className="text-2xl font-bold text-[#1A1A1A] transition-all duration-300">
-        {stat.value}
-      </p>
-    </motion.div>
-  ))}
-</motion.div>
 
-
-
-      {/* الرسم البياني - بيانات حقيقية */}
-      <motion.div className="bg-white border border-[#E9AB1D]/20 rounded-3xl p-6 shadow-[0_4px_20px_rgba(233,171,29,0.05)]" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.3 }}>
+      {/* الرسم البياني */}
+      <motion.div
+        className="bg-white border border-[#E9AB1D]/20 rounded-3xl p-6 shadow-[0_4px_20px_rgba(233,171,29,0.05)]"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+      >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#1A1A1A] flex items-center gap-2">
             <FaChartLine className="text-[#E9AB1D]" />
@@ -284,7 +280,10 @@ export default function DashboardHome() {
         </div>
 
         <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="colorLine" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#E9AB1D" stopOpacity={0.9} />
@@ -292,11 +291,56 @@ export default function DashboardHome() {
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#f5ecd1" vertical={false} opacity={0.6} />
-            <XAxis dataKey="month" stroke="#999" tick={{ fontSize: 13 }} axisLine={false} tickLine={false} />
-            <YAxis stroke="#999" tick={{ fontSize: 13 }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ backgroundColor: "#fffdf7", border: "1px solid #E9AB1D", borderRadius: "12px", boxShadow: "0 4px 12px rgba(233,171,29,0.15)" }} labelStyle={{ color: "#c98a00", fontWeight: 600 }} itemStyle={{ color: "#1A1A1A" }} formatter={(value) => [`${value} شحنة`, "عدد الشحنات"]} />
-            <Line type="monotone" dataKey="shipments" stroke="url(#colorLine)" strokeWidth={4} dot={{ r: 6, fill: "#fff", stroke: "#E9AB1D", strokeWidth: 3 }} activeDot={{ r: 8, fill: "#E9AB1D", stroke: "#fff", strokeWidth: 3, filter: "drop-shadow(0 0 6px rgba(233,171,29,0.6))" }} animationDuration={1800} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#f5ecd1"
+              vertical={false}
+              opacity={0.6}
+            />
+            <XAxis
+              dataKey="month"
+              stroke="#999"
+              tick={{ fontSize: 13 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              stroke="#999"
+              tick={{ fontSize: 13 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#fffdf7",
+                border: "1px solid #E9AB1D",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(233,171,29,0.15)",
+              }}
+              labelStyle={{ color: "#c98a00", fontWeight: 600 }}
+              itemStyle={{ color: "#1A1A1A" }}
+              formatter={(value) => [`${value} شحنة`, "عدد الشحنات"]}
+            />
+            <Line
+              type="monotone"
+              dataKey="shipments"
+              stroke="url(#colorLine)"
+              strokeWidth={4}
+              dot={{
+                r: 6,
+                fill: "#fff",
+                stroke: "#E9AB1D",
+                strokeWidth: 3,
+              }}
+              activeDot={{
+                r: 8,
+                fill: "#E9AB1D",
+                stroke: "#fff",
+                strokeWidth: 3,
+                filter: "drop-shadow(0 0 6px rgba(233,171,29,0.6))",
+              }}
+              animationDuration={1800}
+            />
           </LineChart>
         </ResponsiveContainer>
       </motion.div>

@@ -20,7 +20,7 @@ export default function Home() {
       setUpdatesError("");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/updates");
+        const res = await fetch("https://wepay-backend-y41w.onrender.com/api/updates");
         const data = await res.json();
 
         // دعم شكل الاستجابة { success: true, data: [...] } أو مصفوفة مباشرة

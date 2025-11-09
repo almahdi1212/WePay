@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaPlus, FaTrash } from "react-icons/fa";
+import { apiRequest } from "../../api/api";
 
 /* ✅ Toast Component */
 function Toast({ show, message, onClose }) {
@@ -38,8 +39,7 @@ export default function DashboardUpdates() {
   // 🟨 جلب التحديثات
   async function fetchUpdates() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/updates");
-      const data = await res.json();
+      const data = await apiRequest("/updates");
       setUpdates(data?.data || []);
     } catch (err) {
       console.error(err);
@@ -51,7 +51,7 @@ export default function DashboardUpdates() {
     fetchUpdates();
   }, []);
 
-  // 🟩 إضافة تحديث جديد
+  // 🟩 إضافة تحديث جديد (يحتاج توكن)
   async function handleAddUpdate(e) {
     e.preventDefault();
 
@@ -61,17 +61,16 @@ export default function DashboardUpdates() {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/updates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
+      await apiRequest(
+        "/updates",
+        "POST",
+        {
           title: form.title,
           description: form.description,
           date: form.date,
-        }),
-      });
-
-      if (!res.ok) throw new Error("فشل في إضافة التحديث");
+        },
+        true // ⬅️ لأنه يحتاج توكن
+      );
 
       showToast("✅ تم إضافة التحديث بنجاح");
       setForm({ title: "", description: "", date: "" });
@@ -83,16 +82,11 @@ export default function DashboardUpdates() {
     }
   }
 
-  // 🟥 حذف تحديث
+  // 🟥 حذف تحديث (يحتاج توكن)
   async function handleDeleteUpdate(id) {
     if (!window.confirm("هل تريد حذف هذا التحديث؟")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/updates/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("فشل في الحذف");
-
+      await apiRequest(`/updates/${id}`, "DELETE", null, true);
       showToast("🗑️ تم حذف التحديث بنجاح");
       fetchUpdates();
     } catch (err) {

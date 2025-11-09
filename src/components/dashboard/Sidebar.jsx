@@ -7,11 +7,12 @@ import {
   FaCogs,
 } from "react-icons/fa";
 
+// ✅ كل المسارات أصبحت مطلقة (تبدأ بـ "/dashboard/")
 const items = [
-  { to: "", label: "اللوحة", icon: <FaTachometerAlt /> },
-  { to: "shipments", label: "الشحنات", icon: <FaBoxOpen /> },
-  { to: "updates", label: "آخر التحديثات", icon: <FaNewspaper /> },
-  { to: "settings", label: "الإعدادات العامة", icon: <FaCogs /> }, // ✅ الإعدادات العامة
+  { to: "/dashboard", label: "اللوحة", icon: <FaTachometerAlt /> },
+  { to: "/dashboard/shipments", label: "الشحنات", icon: <FaBoxOpen /> },
+  { to: "/dashboard/updates", label: "آخر التحديثات", icon: <FaNewspaper /> },
+  { to: "/dashboard/settings", label: "الإعدادات العامة", icon: <FaCogs /> },
 ];
 
 export default function Sidebar() {
@@ -35,7 +36,7 @@ export default function Sidebar() {
           <NavLink
             key={it.to}
             to={it.to}
-            end
+            end={it.to === "/dashboard"}
             className={({ isActive }) =>
               `group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 text-[17px] font-medium ${
                 isActive

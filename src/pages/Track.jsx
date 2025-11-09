@@ -59,7 +59,7 @@ export default function Track() {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/shipments/${trackingNumber.trim()}`
+        `https://wepay-backend-y41w.onrender.com/api/shipments/${trackingNumber.trim()}`
       );
       const data = await res.json();
 

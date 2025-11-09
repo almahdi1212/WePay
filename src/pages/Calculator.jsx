@@ -28,9 +28,9 @@ export default function Calculator() {
     const fetchData = async () => {
       try {
         const [categoriesRes, rateRes, shippingRes] = await Promise.all([
-          fetch("http://127.0.0.1:8000/api/categories"),
-          fetch("http://127.0.0.1:8000/api/exchange-rate"),
-          fetch("http://127.0.0.1:8000/api/shipping-rate"),
+          fetch("https://wepay-backend-y41w.onrender.com/api/categories"),
+          fetch("https://wepay-backend-y41w.onrender.com/api/exchange-rate"),
+          fetch("https://wepay-backend-y41w.onrender.com/api/shipping-rate"),
         ]);
 
         const categoriesData = await categoriesRes.json();

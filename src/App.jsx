@@ -1,7 +1,8 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 // 🟡 الصفحات العامة
 import Home from "./pages/Home";
@@ -16,8 +17,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import DashboardShipments from "./pages/dashboard/DashboardShipments";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
 import DashboardUpdates from "./pages/dashboard/DashboardUpdates";
-
-
+import Login from "./pages/Login";
 
 export default function App() {
   return (
@@ -72,21 +72,22 @@ export default function App() {
         }
       />
 
-      {/* ⚙️ لوحة التحكم */}
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        {/* الصفحة الرئيسية للوحة التحكم */}
+      {/* 🧱 تسجيل الدخول */}
+      <Route path="/login" element={<Login />} />
+
+      {/* ⚙️ لوحة التحكم (محميّة) */}
+      <Route
+        path="/dashboard/*"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<DashboardHome />} />
-
-        {/* صفحة الشحنات داخل نفس الـ Layout */}
         <Route path="shipments" element={<DashboardShipments />} />
-        
-         <Route path="settings" element={<DashboardSettings />} /> {/* ✅ هنا */}
-           <Route path="updates" element={<DashboardUpdates />} /> {/* ✅ هنا */}
-
-
-
-        {/* ✅ يمكن لاحقًا إضافة صفحات أخرى داخل نفس الـ Dashboard */}
-        {/* <Route path="settings" element={<DashboardSettings />} /> */}
+        <Route path="settings" element={<DashboardSettings />} />
+        <Route path="updates" element={<DashboardUpdates />} />
       </Route>
 
       {/* 🚫 صفحة الخطأ */}

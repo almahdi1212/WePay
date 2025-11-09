@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { apiRequest } from "../../api/api";
 import { FaPlus, FaEdit, FaTrash, FaMoneyBillWave, FaTruck } from "react-icons/fa";
 
 /* ✅ Toast Component */
@@ -33,6 +34,9 @@ export default function DashboardSettings() {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  const [exchangeModal, setExchangeModal] = useState({ show: false, value: "" });
+  const [shippingModal, setShippingModal] = useState({ show: false, value: "" });
 
   function showToast(message) {
     setToast({ show: true, message });
@@ -41,8 +45,7 @@ export default function DashboardSettings() {
   // 🧩 جلب الأصناف
   async function fetchCategories() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/categories");
-      const data = await res.json();
+      const data = await apiRequest("/categories");
       const list = Array.isArray(data.data) ? data.data : data;
       const normalized = list.map((cat) => ({
         id: cat.id,
@@ -59,8 +62,7 @@ export default function DashboardSettings() {
   // 💱 جلب سعر الصرف
   async function fetchExchangeRate() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/exchange-rate");
-      const data = await res.json();
+      const data = await apiRequest("/exchange-rate");
       setExchangeRate(data?.rate ?? data?.data?.rate ?? 0);
     } catch (err) {
       console.error("❌ فشل في جلب سعر الصرف:", err);
@@ -71,8 +73,7 @@ export default function DashboardSettings() {
   // 🚚 جلب سعر الشحن
   async function fetchShippingRate() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/shipping-rate");
-      const data = await res.json();
+      const data = await apiRequest("/shipping-rate");
       setShippingRate(data?.rate ?? data?.data?.rate ?? 0);
     } catch (err) {
       console.error("❌ فشل في جلب سعر الشحن:", err);
@@ -100,23 +101,14 @@ export default function DashboardSettings() {
 
     const payload = { name, approx_weight };
     try {
-      let res;
       if (editingCategory?.id) {
-        res = await fetch(`http://127.0.0.1:8000/api/categories/${editingCategory.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(payload),
-        });
+        await apiRequest(`/categories/${editingCategory.id}`, "PUT", payload, true);
+        showToast("✅ تم تعديل الصنف");
       } else {
-        res = await fetch("http://127.0.0.1:8000/api/categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(payload),
-        });
+        await apiRequest("/categories", "POST", payload, true);
+        showToast("✅ تم إضافة الصنف");
       }
 
-      if (!res.ok) throw new Error("فشل في الحفظ");
-      showToast(editingCategory ? "✅ تم تعديل الصنف" : "✅ تم إضافة الصنف");
       setIsModalOpen(false);
       setEditingCategory(null);
       setForm({ name: "", weight: "" });
@@ -128,68 +120,56 @@ export default function DashboardSettings() {
   }
 
   // 🗑️ حذف صنف
-  async function handleDeleteCategory(id) {
-    if (!window.confirm("هل تريد حذف هذا الصنف؟")) return;
+  async function confirmDeleteCategory() {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("فشل الحذف");
-      showToast("🗑️ تم حذف الصنف");
+      await apiRequest(`/categories/${deleteModal.id}`, "DELETE", null, true);
+      showToast("🗑️ تم حذف الصنف بنجاح");
       fetchCategories();
     } catch (err) {
       console.error(err);
       showToast("❌ حدث خطأ أثناء الحذف");
+    } finally {
+      setDeleteModal({ show: false, id: null });
     }
   }
 
-  // 💱 تحديث سعر الصرف (معدل حسب backend)
+  // 💱 تحديث سعر الصرف
   async function handleUpdateExchangeRate() {
-    const newRate = prompt("أدخل سعر الصرف الجديد بالدينار الليبي:", exchangeRate ?? 0);
-    if (newRate === null) return;
-    const parsed = parseFloat(newRate);
+    const parsed = parseFloat(exchangeModal.value);
     if (isNaN(parsed)) {
       showToast("❌ أدخل قيمة رقمية صحيحة");
       return;
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/exchange-rate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          rate: parsed,
-          currency_from: "USD",
-          currency_to: "LYD",
-        }),
-      });
-
-      if (!res.ok) throw new Error("فشل في تحديث سعر الصرف");
+      await apiRequest(
+        "/exchange-rate",
+        "POST",
+        { rate: parsed, currency_from: "USD", currency_to: "LYD" },
+        true
+      );
       setExchangeRate(parsed);
       showToast("✅ تم تحديث سعر الصرف بنجاح");
+      setExchangeModal({ show: false, value: "" });
     } catch (err) {
       console.error(err);
       showToast("❌ حدث خطأ أثناء تحديث سعر الصرف");
     }
   }
 
-  // 🚚 تحديث سعر الشحن (سيُحدث بعد معرفة backend)
+  // 🚚 تحديث سعر الشحن
   async function handleUpdateShippingRate() {
-    const newRate = prompt("أدخل سعر الشحن الجديد (لكل كغ):", shippingRate ?? 0);
-    if (newRate === null) return;
-    const parsed = parseFloat(newRate);
+    const parsed = parseFloat(shippingModal.value);
     if (isNaN(parsed)) {
-      showToast("أدخل قيمة رقمية صحيحة لسعر الشحن");
+      showToast("❌ أدخل قيمة رقمية صحيحة");
       return;
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/shipping-rate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ rate: parsed }),
-      });
-      if (!res.ok) throw new Error("فشل تحديث سعر الشحن");
+      await apiRequest("/shipping-rate", "POST", { rate_per_kg: parsed }, true);
       setShippingRate(parsed);
-      showToast("✅ تم تحديث سعر الشحن");
+      showToast("✅ تم تحديث سعر الشحن بنجاح");
+      setShippingModal({ show: false, value: "" });
     } catch (err) {
       console.error(err);
       showToast("❌ حدث خطأ أثناء تحديث سعر الشحن");
@@ -213,8 +193,14 @@ export default function DashboardSettings() {
         <div className="bg-white p-8 rounded-3xl shadow-md border border-[#E9AB1D]/30 space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-[#1A1A1A]">الأصناف</h2>
-            <button onClick={() => { setEditingCategory(null); setForm({ name: "", weight: "" }); setIsModalOpen(true); }}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95">
+            <button
+              onClick={() => {
+                setEditingCategory(null);
+                setForm({ name: "", weight: "" });
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95"
+            >
               <FaPlus /> إضافة صنف
             </button>
           </div>
@@ -235,19 +221,31 @@ export default function DashboardSettings() {
                       <td>{cat.name}</td>
                       <td>{cat.weight}</td>
                       <td className="flex justify-center gap-2 py-2">
-                        <button onClick={() => { setEditingCategory(cat); setForm({ name: cat.name, weight: cat.weight }); setIsModalOpen(true); }}
-                          className="p-2 border rounded-lg border-[#E9AB1D]/30 hover:bg-[#fff4d9]">
+                        <button
+                          onClick={() => {
+                            setEditingCategory(cat);
+                            setForm({ name: cat.name, weight: cat.weight });
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2 border rounded-lg border-[#E9AB1D]/30 hover:bg-[#fff4d9]"
+                        >
                           <FaEdit className="text-[#c98a00]" />
                         </button>
-                        <button onClick={() => handleDeleteCategory(cat.id)}
-                          className="p-2 border rounded-lg border-red-300 hover:bg-red-100">
+                        <button
+                          onClick={() => setDeleteModal({ show: true, id: cat.id })}
+                          className="p-2 border rounded-lg border-red-300 hover:bg-red-100 transition"
+                        >
                           <FaTrash className="text-red-500" />
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="3" className="py-5 text-gray-500">لا توجد أصناف مضافة بعد</td></tr>
+                  <tr>
+                    <td colSpan="3" className="py-5 text-gray-500">
+                      لا توجد أصناف مضافة بعد
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -261,12 +259,17 @@ export default function DashboardSettings() {
           <div>
             <h2 className="text-2xl font-bold text-[#1A1A1A]">سعر الصرف</h2>
             <p className="text-gray-600 mt-1">
-              1 دولار أمريكي = <span className="text-[#E9AB1D] font-semibold">{exchangeRate ?? "—"} دينار ليبي</span>
+              1 دولار أمريكي ={" "}
+              <span className="text-[#E9AB1D] font-semibold">
+                {exchangeRate ?? "—"} دينار ليبي
+              </span>
             </p>
           </div>
-          <button onClick={handleUpdateExchangeRate}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95">
-            <FaMoneyBillWave /> تحديث
+          <button
+            onClick={() => setExchangeModal({ show: true, value: exchangeRate || "" })}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95 transition"
+          >
+            <FaMoneyBillWave /> تعديل
           </button>
         </div>
       </motion.div>
@@ -277,11 +280,16 @@ export default function DashboardSettings() {
           <div>
             <h2 className="text-2xl font-bold text-[#1A1A1A]">سعر الشحن</h2>
             <p className="text-gray-600 mt-1">
-              لكل كغ = <span className="text-[#E9AB1D] font-semibold">{shippingRate ?? "—"} دينار ليبي</span>
+              لكل كغ ={" "}
+              <span className="text-[#E9AB1D] font-semibold">
+                {shippingRate ?? "—"} دينار ليبي
+              </span>
             </p>
           </div>
-          <button onClick={handleUpdateShippingRate}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95">
+          <button
+            onClick={() => setShippingModal({ show: true, value: shippingRate || "" })}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white shadow hover:opacity-95 transition"
+          >
             <FaTruck /> تعديل
           </button>
         </div>
@@ -291,31 +299,171 @@ export default function DashboardSettings() {
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsModalOpen(false)} />
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-            className="relative bg-white rounded-2xl border border-[#E9AB1D]/20 p-6 w-full max-w-md shadow-2xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-white rounded-2xl border border-[#E9AB1D]/20 p-6 w-full max-w-md shadow-2xl"
+          >
             <h3 className="text-lg font-semibold mb-3 text-[#1A1A1A]">
               {editingCategory ? "تعديل الصنف" : "إضافة صنف جديد"}
             </h3>
             <form onSubmit={handleSaveCategory} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-600 mb-1">اسم الصنف</label>
-                <input required value={form.name}
+                <input
+                  required
+                  value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40" />
+                  className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40"
+                />
               </div>
               <div>
                 <label className="block text-sm text-gray-600 mb-1">الوزن (كغ)</label>
-                <input required type="number" step="0.01" min="0" value={form.weight}
+                <input
+                  required
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.weight}
                   onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40" />
+                  className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40"
+                />
               </div>
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-[#E9AB1D]/20 rounded-lg">إلغاء</button>
-                <button type="submit"
-                  className="px-4 py-2 bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white rounded-lg">حفظ</button>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-[#E9AB1D]/20 rounded-lg"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white rounded-lg"
+                >
+                  حفظ
+                </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 🗑️ مودال تأكيد الحذف */}
+      {deleteModal.show && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setDeleteModal({ show: false, id: null })}></div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-white/95 backdrop-blur-xl border border-[#E9AB1D]/20 rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center"
+          >
+            <h3 className="text-lg font-semibold text-[#1A1A1A] mb-3">تأكيد الحذف</h3>
+            <p className="text-gray-600 mb-5">هل أنت متأكد أنك تريد حذف هذا الصنف؟</p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setDeleteModal({ show: false, id: null })}
+                className="px-4 py-2 rounded-lg bg-white border border-[#E9AB1D]/20 text-gray-700 hover:bg-gray-50 transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmDeleteCategory}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md hover:opacity-95 transition"
+              >
+                حذف
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 💱 مودال تعديل سعر الصرف */}
+      {exchangeModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setExchangeModal({ show: false, value: "" })}
+          ></div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-white/90 backdrop-blur-xl border border-[#E9AB1D]/20 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+          >
+            <h3 className="text-lg font-semibold mb-3 text-[#1A1A1A]">
+              تعديل سعر الصرف
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">أدخل سعر الصرف الجديد بالدينار الليبي</p>
+
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={exchangeModal.value}
+              onChange={(e) => setExchangeModal({ ...exchangeModal, value: e.target.value })}
+              className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40 mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setExchangeModal({ show: false, value: "" })}
+                className="px-4 py-2 border border-[#E9AB1D]/20 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleUpdateExchangeRate}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white hover:opacity-95 transition"
+              >
+                حفظ
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 🚚 مودال تعديل سعر الشحن */}
+      {shippingModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShippingModal({ show: false, value: "" })}
+          ></div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-white/90 backdrop-blur-xl border border-[#E9AB1D]/20 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+          >
+            <h3 className="text-lg font-semibold mb-3 text-[#1A1A1A]">
+              تعديل سعر الشحن
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">أدخل سعر الشحن الجديد (لكل كغ)</p>
+
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={shippingModal.value}
+              onChange={(e) => setShippingModal({ ...shippingModal, value: e.target.value })}
+              className="w-full px-3 py-2 border border-[#E9AB1D]/20 rounded-lg focus:ring-2 focus:ring-[#E9AB1D]/40 mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShippingModal({ show: false, value: "" })}
+                className="px-4 py-2 border border-[#E9AB1D]/20 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleUpdateShippingRate}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white hover:opacity-95 transition"
+              >
+                حفظ
+              </button>
+            </div>
           </motion.div>
         </div>
       )}
