@@ -1,18 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const [showShimmer, setShowShimmer] = useState(true);
+  const navigate = useNavigate();
 
-  // ⚡ تشغيل الوميض عند تحميل الصفحة وعند الانتقال بين الصفحات
+  const [showShimmer, setShowShimmer] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // ⚡ تحقق من وجود التوكن قبل عرض أي شيء
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      // لا تعرض شيء وارجع إلى صفحة تسجيل الدخول
+      navigate("/login", { replace: true });
+    } else {
+      setAuthorized(true);
+    }
+    setCheckingAuth(false);
+  }, [navigate]);
+
+  // ⚡ تشغيل وميض الليزر عند تغيير الصفحة
   useEffect(() => {
     setShowShimmer(true);
     const timer = setTimeout(() => setShowShimmer(false), 2500);
     return () => clearTimeout(timer);
   }, [location.pathname]);
+
+  // 🔒 أثناء التحقق من الجلسة لا نعرض شيئًا لتجنب أي وميض
+  if (checkingAuth) return null;
+
+  // 🚫 إن لم يكن المستخدم مصرح له، لا نعرض شيء
+  if (!authorized) return null;
 
   return (
     <div className="flex min-h-screen bg-[#f8f6f2] text-[#1A1A1A]">
@@ -44,7 +66,9 @@ export default function DashboardLayout() {
 
           {/* يمين: الترحيب */}
           <div className="flex items-center gap-4 z-10">
-            <div className="text-sm text-gray-600">مرحبًا Admin</div>
+            <div className="text-sm text-gray-600">
+              مرحبًا {localStorage.getItem("username") || "Admin"}
+            </div>
             <div className="w-10 h-10 rounded-full bg-[#fff9ef] flex items-center justify-center text-[#E9AB1D] font-semibold shadow-sm">
               WP
             </div>

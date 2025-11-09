@@ -17,6 +17,8 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import DashboardShipments from "./pages/dashboard/DashboardShipments";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
 import DashboardUpdates from "./pages/dashboard/DashboardUpdates";
+import Users from "./pages/dashboard/users"; // ✅ استيراد صفحة المستخدمين
+
 import Login from "./pages/Login";
 
 export default function App() {
@@ -88,6 +90,8 @@ export default function App() {
         <Route path="shipments" element={<DashboardShipments />} />
         <Route path="settings" element={<DashboardSettings />} />
         <Route path="updates" element={<DashboardUpdates />} />
+        <Route path="users" element={<Users />} />
+
       </Route>
 
       {/* 🚫 صفحة الخطأ */}
