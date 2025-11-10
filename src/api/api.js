@@ -1,8 +1,14 @@
 // src/api/api.js
 const API_BASE_URL = "https://wepay-backend-y41w.onrender.com/api";
 
+/**
+ * دالة موحدة للتعامل مع جميع الطلبات API Requests
+ */
 export async function apiRequest(endpoint, method = "GET", body = null, auth = false) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+  };
 
   // 🧩 إذا كانت العملية تحتاج توكن (auth = true)
   if (auth) {
@@ -10,12 +16,37 @@ export async function apiRequest(endpoint, method = "GET", body = null, auth = f
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const options = { method, headers };
-  if (body) options.body = JSON.stringify(body);
+  const options = {
+    method,
+    headers,
+  };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-  const data = await response.json();
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
 
-  if (!response.ok) throw new Error(data.message || "حدث خطأ أثناء الاتصال بالخادم");
-  return data;
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+    // نحاول جلب الرد كـ JSON — في حال وجود خطأ غير متوقع
+    const data = await response.json().catch(() => ({
+      message: "فشل في قراءة استجابة الخادم.",
+    }));
+
+    if (!response.ok) {
+      // ✅ إذا انتهت الجلسة (401)، نحذف التوكن ونوجّه لتسجيل الدخول
+      if (response.status === 401) {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("username");
+        window.location.href = "/login";
+      }
+
+      throw new Error(data.message || "حدث خطأ أثناء الاتصال بالخادم.");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("API Error:", error);
+    throw new Error(error.message || "فشل الاتصال بالخادم.");
+  }
 }
