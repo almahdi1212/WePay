@@ -41,10 +41,14 @@ export default function Users() {
 
       const body = {
         name: form.name,
-        username: form.username,
       };
 
-      // كلمة المرور فقط إذا كانت مضافة أو في إنشاء مستخدم
+      // ✅ إرسال username فقط عند الإضافة أو عند تعديل مستخدم ليس admin
+      if (!editingUser || (editingUser && editingUser.username !== "admin")) {
+        body.username = form.username;
+      }
+
+      // ✅ كلمة المرور فقط إذا تمت إضافتها
       if (form.password.trim() !== "" || !editingUser) {
         body.password = form.password;
       }
@@ -80,9 +84,10 @@ export default function Users() {
   }
 
   // 🔍 فلترة حسب البحث
-  const filteredUsers = users.filter((u) =>
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredUsers = users.filter(
+    (u) =>
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -160,10 +165,6 @@ export default function Users() {
                     <td className="py-3 flex items-center justify-center gap-3">
                       <button
                         onClick={() => {
-                          if (u.username === "admin") {
-                            showToast("⚠️ لا يمكن تعديل المستخدم الرئيسي (admin)");
-                            return;
-                          }
                           setEditingUser(u);
                           setForm({ name: u.name, username: u.username, password: "" });
                           setIsModalOpen(true);
@@ -216,6 +217,7 @@ export default function Users() {
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* الاسم */}
               <div>
                 <label className="block text-sm text-gray-600 mb-1">الاسم الكامل</label>
                 <input
@@ -226,17 +228,20 @@ export default function Users() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">اسم المستخدم</label>
-                <input
-                  required
-                  disabled={editingUser?.username === "admin"}
-                  value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-white border border-[#E9AB1D]/20 focus:ring-2 focus:ring-[#E9AB1D]/40 disabled:bg-gray-100"
-                />
-              </div>
+              {/* اسم المستخدم - فقط إذا لم يكن admin */}
+              {!editingUser || (editingUser && editingUser.username !== "admin") ? (
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">اسم المستخدم</label>
+                  <input
+                    required
+                    value={form.username}
+                    onChange={(e) => setForm({ ...form, username: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-[#E9AB1D]/20 focus:ring-2 focus:ring-[#E9AB1D]/40"
+                  />
+                </div>
+              ) : null}
 
+              {/* كلمة المرور */}
               <div>
                 <label className="block text-sm text-gray-600 mb-1">
                   كلمة المرور {editingUser && <span className="text-gray-400 text-xs">(اختياري)</span>}
