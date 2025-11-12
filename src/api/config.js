@@ -1,7 +1,7 @@
 // 📁 src/api/config.js
 
 // ✅ استيراد الرابط من .env
-export const API_PREFIX = import.meta.env.VITE_API_PREFIX || "http://127.0.0.1:8000/api";
+export const API_PREFIX = import.meta.env.VITE_API_PREFIX || "https://wepay-backend-y41w.onrender.com/api";
 
 console.log("✅ API Prefix:", API_PREFIX); // فقط للتحقق
 
