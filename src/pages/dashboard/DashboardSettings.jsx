@@ -70,16 +70,26 @@ export default function DashboardSettings() {
     }
   }
 
-  // 🚚 جلب سعر الشحن
-  async function fetchShippingRate() {
-    try {
-      const data = await apiRequest("/shipping-rate");
-      setShippingRate(data?.rate ?? data?.data?.rate ?? 0);
-    } catch (err) {
-      console.error("❌ فشل في جلب سعر الشحن:", err);
-      showToast("تعذر جلب سعر الشحن");
-    }
+// 🚚 جلب سعر الشحن
+async function fetchShippingRate() {
+  try {
+    const data = await apiRequest("/shipping-rate");
+
+    // ✅ دعم جميع الصيغ المحتملة
+    const rate =
+      data?.rate_per_kg ??
+      data?.data?.rate_per_kg ??
+      data?.rate ??
+      data?.data?.rate ??
+      0;
+
+    setShippingRate(rate);
+  } catch (err) {
+    console.error("❌ فشل في جلب سعر الشحن:", err);
+    showToast("تعذر جلب سعر الشحن");
   }
+}
+
 
   useEffect(() => {
     fetchCategories();

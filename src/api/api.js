@@ -1,12 +1,13 @@
 // src/api/api.js
-const API_BASE_URL = "https://wepay-backend-y41w.onrender.com/api";
+
+import { API_PREFIX } from "./config"; // ✅ الاستيراد الصحيح من config.js
 
 /**
  * دالة موحدة للتعامل مع جميع الطلبات API Requests
  */
 export async function apiRequest(endpoint, method = "GET", body = null, auth = false) {
   const headers = {
-    "Accept": "application/json",
+    Accept: "application/json",
     "Content-Type": "application/json",
   };
 
@@ -16,19 +17,13 @@ export async function apiRequest(endpoint, method = "GET", body = null, auth = f
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const options = {
-    method,
-    headers,
-  };
-
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
+  const options = { method, headers };
+  if (body) options.body = JSON.stringify(body);
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    // ✅ استخدم البريفكس هنا
+    const response = await fetch(`${API_PREFIX}${endpoint}`, options);
 
-    // نحاول جلب الرد كـ JSON — في حال وجود خطأ غير متوقع
     const data = await response.json().catch(() => ({
       message: "فشل في قراءة استجابة الخادم.",
     }));
@@ -46,7 +41,7 @@ export async function apiRequest(endpoint, method = "GET", body = null, auth = f
 
     return data;
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("❌ API Error:", error);
     throw new Error(error.message || "فشل الاتصال بالخادم.");
   }
 }

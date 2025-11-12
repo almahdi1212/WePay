@@ -18,15 +18,22 @@ export default function Sidebar() {
     navigate("/login");
   };
 
-  // ✅ الأقسام بالترتيب المطلوب
+  // 🧩 جلب اسم المستخدم من localStorage
+  const username = localStorage.getItem("username");
+
+  // ✅ الأقسام بالترتيب المطلوب (بدون إدارة المستخدمين مؤقتًا)
   const items = [
     { to: "/dashboard", label: "اللوحة", icon: <FaTachometerAlt /> },
     { to: "/dashboard/shipments", label: "الشحنات", icon: <FaBoxOpen /> },
     { to: "/dashboard/updates", label: "آخر التحديثات", icon: <FaNewspaper /> },
     { to: "/dashboard/settings", label: "الإعدادات العامة", icon: <FaCogs /> },
-    { to: "/dashboard/users", label: "إدارة المستخدمين", icon: <FaUsers /> }, // 👈 الآن أسفل الإعدادات العامة
     { action: handleLogout, label: "تسجيل الخروج", icon: <FaSignOutAlt />, isLogout: true },
   ];
+
+  // ✅ إضافة قسم إدارة المستخدمين فقط إذا كان المستخدم admin
+  if (username === "admin") {
+    items.splice(4, 0, { to: "/dashboard/users", label: "إدارة المستخدمين", icon: <FaUsers /> });
+  }
 
   return (
     <nav className="flex flex-col justify-between h-full min-h-screen px-5 py-10 bg-white">

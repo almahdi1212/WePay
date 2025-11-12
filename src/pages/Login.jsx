@@ -1,6 +1,8 @@
+// 📁 src/pages/Login.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaLock, FaUser } from "react-icons/fa";
+import { API_PREFIX } from "../api/config"; // ✅ استدعاء الرابط من config.js
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -20,7 +22,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://wepay-backend-y41w.onrender.com/api/login", {
+      // ✅ استخدم البريفكس من config.js
+      const res = await fetch(`${API_PREFIX}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

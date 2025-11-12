@@ -15,7 +15,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
+import { apiRequest } from "../../api/api";
 
 export default function DashboardHome() {
   const [stats, setStats] = useState({
@@ -24,12 +26,9 @@ export default function DashboardHome() {
     exchangeRate: 0,
     shippingRate: 0,
   });
-
   const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [glow, setGlow] = useState(true);
-  const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState("");
+  const [glow, setGlow] = useState(true);
   const [greeting, setGreeting] = useState("");
   const [emoji, setEmoji] = useState("☀️");
 
@@ -55,113 +54,126 @@ export default function DashboardHome() {
   }, []);
 
   // 🔄 جلب بيانات لوحة التحكم
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [shipmentsRes, updatesRes, rateRes, shippingRes] = await Promise.all([
-          fetch("https://wepay-backend-y41w.onrender.com/api/shipments"),
-          fetch("https://wepay-backend-y41w.onrender.com/api/updates"),
-          fetch("https://wepay-backend-y41w.onrender.com/api/exchange-rate"),
-          fetch("https://wepay-backend-y41w.onrender.com/api/shipping-rate"),
-        ]);
+  // 🔄 جلب بيانات لوحة التحكم
+useEffect(() => {
+  const fetchDashboardData = async () => {
+    try {
+      const [shipments, updates, rate, shipping] = await Promise.all([
+        apiRequest("/shipments"),
+        apiRequest("/updates"),
+        apiRequest("/exchange-rate"),
+        apiRequest("/shipping-rate"),
+      ]);
 
-        const shipmentsJson = await shipmentsRes.json();
-        const updatesJson = await updatesRes.json();
-        const rateJson = await rateRes.json();
-        const shippingRateJson = await shippingRes.json();
+      const shipmentsArray = Array.isArray(shipments?.data)
+        ? shipments.data
+        : Array.isArray(shipments)
+        ? shipments
+        : [];
 
-        const shipmentsArray =
-          shipmentsJson?.data && Array.isArray(shipmentsJson.data)
-            ? shipmentsJson.data
-            : Array.isArray(shipmentsJson)
-            ? shipmentsJson
-            : [];
+      const updatesArray = Array.isArray(updates?.data)
+        ? updates.data
+        : Array.isArray(updates)
+        ? updates
+        : [];
 
-        const updatesArray =
-          updatesJson?.data && Array.isArray(updatesJson.data)
-            ? updatesJson.data
-            : Array.isArray(updatesJson)
-            ? updatesJson
-            : [];
+      // 🔹 استخراج أسماء المستخدمين من كل الشحنات
+      const userNames = [
+        ...new Set(
+          shipmentsArray.map((sh) => sh.user?.name ?? sh.user?.username ?? "غير محدد")
+        ),
+      ];
 
-        // 🗓️ إنشاء بيانات الرسم البياني الشهري
-        const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-          month: new Date(0, i).toLocaleString("ar-LY", { month: "long" }),
-          shipments: 0,
-        }));
+      // 🗓️ إنشاء بيانات الرسم البياني الشهري (لكل المستخدمين)
+      const monthlyData = Array.from({ length: 12 }, (_, i) => {
+        const monthName = new Date(0, i).toLocaleString("ar-LY", {
+          month: "long",
+        });
+        const monthObj = { month: monthName, shipments: 0 };
+        userNames.forEach((user) => (monthObj[user] = 0));
+        return monthObj;
+      });
 
-        shipmentsArray.forEach((sh) => {
-          const dateStr = sh.created_at ?? sh.createdAt ?? sh.date ?? null;
-          if (dateStr) {
-            const date = new Date(dateStr);
-            if (!isNaN(date)) {
-              monthlyData[date.getMonth()].shipments++;
-            }
+      // ✅ تعبئة البيانات
+      shipmentsArray.forEach((sh) => {
+        const dateStr = sh.created_at ?? sh.createdAt ?? sh.date ?? null;
+        const userName = sh.user?.name ?? sh.user?.username ?? "غير محدد";
+
+        if (dateStr) {
+          const date = new Date(dateStr);
+          if (!isNaN(date)) {
+            const monthIndex = date.getMonth();
+            monthlyData[monthIndex].shipments++;
+            monthlyData[monthIndex][userName]++;
           }
-        });
+        }
+      });
 
-        setChartData(monthlyData);
+      setChartData(monthlyData);
+      setStats({
+        shipments: shipmentsArray.length || 0,
+        updates: updatesArray.length || 0,
+        exchangeRate: rate?.data?.rate ?? rate?.rate ?? 0,
+        shippingRate:
+          shipping?.rate_per_kg ??
+          shipping?.data?.rate_per_kg ??
+          shipping?.rate ??
+          0,
+      });
 
-        setStats({
-          shipments: shipmentsArray.length || 0,
-          updates: updatesArray.length || 0,
-          exchangeRate: rateJson?.data?.rate ?? rateJson?.rate ?? 0,
-          shippingRate: shippingRateJson?.rate_per_kg ?? 0,
-        });
+      setLastUpdated(
+        new Date().toLocaleString("ar-LY", {
+          weekday: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    } catch (err) {
+      console.error("❌ خطأ في جلب البيانات:", err);
+    }
+  };
 
-        setLastUpdated(
-          new Date().toLocaleString("ar-LY", {
-            weekday: "long",
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        );
+  fetchDashboardData();
+}, []);
 
-        setLoading(false);
-      } catch (err) {
-        console.error("خطأ في جلب البيانات:", err);
-        setError("حدث خطأ أثناء تحميل البيانات ❌");
-        setLoading(false);
-      }
-    };
 
-    fetchDashboardData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh]">
-        <motion.div
-          className="w-14 h-14 border-4 border-[#E9AB1D]/80 border-t-transparent rounded-full animate-spin mb-5 shadow-md"
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-        />
-        <p className="text-gray-600 font-medium">جارٍ تحميل البيانات...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh] text-center">
-        <p className="text-red-600 text-lg font-semibold mb-3">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="bg-[#E9AB1D] text-white px-4 py-2 rounded-xl shadow hover:bg-[#c98a00] transition-all"
-        >
-          إعادة المحاولة
-        </button>
-      </div>
-    );
-  }
-
-  // 🎯 البطاقات (بدون الأصناف)
+  // 🎯 بطاقات الإحصاءات
   const statsCards = [
-    { title: "إجمالي الشحنات", value: stats.shipments, icon: <FaBox />, color: "#E9AB1D" },
-    { title: "سعر الصرف", value: `${stats.exchangeRate} LYD`, icon: <FaDollarSign />, color: "#E9AB1D" },
-    { title: "سعر الشحن", value: `${stats.shippingRate} LYD`, icon: <FaTruck />, color: "#c98a00" },
-    { title: "آخر التحديثات", value: stats.updates, icon: <FaSyncAlt />, color: "#E9AB1D" },
+    {
+      title: "إجمالي الشحنات",
+      value: stats.shipments,
+      icon: <FaBox />,
+      color: "#E9AB1D",
+    },
+    {
+      title: "سعر الصرف",
+      value: `${stats.exchangeRate} LYD`,
+      icon: <FaDollarSign />,
+      color: "#E9AB1D",
+    },
+    {
+      title: "سعر الشحن",
+      value: `${stats.shippingRate} LYD`,
+      icon: <FaTruck />,
+      color: "#c98a00",
+    },
+    {
+      title: "آخر التحديثات",
+      value: stats.updates,
+      icon: <FaSyncAlt />,
+      color: "#E9AB1D",
+    },
+  ];
+
+  // ✅ استخراج أسماء المستخدمين الفريدة من البيانات الشهرية
+  const allUsers = [
+    ...new Set(
+      chartData.flatMap((month) =>
+        Object.keys(month).filter(
+          (key) => key !== "month" && key !== "shipments"
+        )
+      )
+    ),
   ];
 
   return (
@@ -171,11 +183,13 @@ export default function DashboardHome() {
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mb-4"
       >
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-1 text-[#1A1A1A]">لوحة التحكم</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-1 text-[#1A1A1A]">
+          لوحة التحكم
+        </h1>
         <p className="text-sm text-gray-500">
-          آخر تحديث: <span className="font-semibold text-[#E9AB1D]">{lastUpdated}</span>
+          آخر تحديث:{" "}
+          <span className="font-semibold text-[#E9AB1D]">{lastUpdated}</span>
         </p>
       </motion.div>
 
@@ -188,9 +202,12 @@ export default function DashboardHome() {
       >
         <div>
           <h2 className="text-2xl font-bold text-[#1A1A1A] mb-2 flex items-center gap-2">
-            {emoji} {greeting} <span className="text-[#E9AB1D] font-semibold">Admin</span>
+            {emoji} {greeting}{" "}
+            <span className="text-[#E9AB1D] font-semibold">{localStorage.getItem("username") || "Admin"}</span>
           </h2>
-          <p className="text-sm text-gray-600">إليك نظرة عامة على لوحة التحكم الخاصة بك لهذا اليوم.</p>
+          <p className="text-sm text-gray-600">
+            إليك نظرة عامة على لوحة التحكم الخاصة بك لهذا اليوم.
+          </p>
         </div>
 
         <motion.div
@@ -208,7 +225,7 @@ export default function DashboardHome() {
         </motion.div>
       </motion.div>
 
-      {/* بطاقات الإحصاءات */}
+      {/* البطاقات */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
         initial="hidden"
@@ -218,7 +235,10 @@ export default function DashboardHome() {
         {statsCards.map((stat, index) => (
           <motion.div
             key={index}
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
             whileHover={{
               scale: 1.05,
               backgroundColor: "#fffaf0",
@@ -228,14 +248,15 @@ export default function DashboardHome() {
             transition={{ type: "spring", stiffness: 220, damping: 14 }}
             className="bg-white border border-[#E9AB1D]/20 shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center"
           >
-            <motion.div
-              whileHover={{ scale: 1.2 }}
+            <div
               className="w-12 h-12 flex items-center justify-center rounded-xl mb-3 bg-[#E9AB1D]/10 text-[#E9AB1D]"
               style={{ color: stat.color }}
             >
               {stat.icon}
-            </motion.div>
-            <h3 className="text-sm text-gray-600 mb-1 text-center">{stat.title}</h3>
+            </div>
+            <h3 className="text-sm text-gray-600 mb-1 text-center">
+              {stat.title}
+            </h3>
             <p className="text-2xl font-bold text-[#1A1A1A]">{stat.value}</p>
           </motion.div>
         ))}
@@ -251,47 +272,56 @@ export default function DashboardHome() {
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#1A1A1A] flex items-center gap-2">
             <FaChartLine className="text-[#E9AB1D]" />
-            إحصائيات الشحنات الشهرية
+            إحصائيات الشحنات الشهرية 
           </h2>
         </div>
 
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={chartData}>
-            <defs>
-              <linearGradient id="colorLine" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#E9AB1D" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#c98a00" stopOpacity={0.3} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f5ecd1" vertical={false} />
-            <XAxis dataKey="month" stroke="#999" tick={{ fontSize: 13 }} />
-            <YAxis stroke="#999" tick={{ fontSize: 13 }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#fffdf7",
-                border: "1px solid #E9AB1D",
-                borderRadius: "12px",
-              }}
-              labelStyle={{ color: "#c98a00", fontWeight: 600 }}
-              itemStyle={{ color: "#1A1A1A" }}
-              formatter={(value) => [`${value} شحنة`, "عدد الشحنات"]}
-            />
-            <Line
-              type="monotone"
-              dataKey="shipments"
-              stroke="url(#colorLine)"
-              strokeWidth={4}
-              dot={{ r: 6, fill: "#fff", stroke: "#E9AB1D", strokeWidth: 3 }}
-              activeDot={{
-                r: 8,
-                fill: "#E9AB1D",
-                stroke: "#fff",
-                strokeWidth: 3,
-              }}
-              animationDuration={1800}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={480}>
+  <LineChart data={chartData}>
+    <CartesianGrid strokeDasharray="3 3" stroke="#f5ecd1" vertical={false} />
+    <XAxis dataKey="month" stroke="#999" tick={{ fontSize: 13 }} />
+    <YAxis stroke="#999" tick={{ fontSize: 13 }} />
+    <Tooltip
+      contentStyle={{
+        backgroundColor: "#fffdf7",
+        border: "1px solid #E9AB1D",
+        borderRadius: "12px",
+      }}
+    />
+    <Legend />
+
+    {/* الخط الرئيسي لإجمالي الشحنات */}
+    <Line
+      type="monotone"
+      dataKey="shipments"
+      stroke="#E9AB1D"
+      strokeWidth={4}
+      dot={{ r: 5, fill: "#fff", stroke: "#E9AB1D", strokeWidth: 3 }}
+      activeDot={{ r: 7, fill: "#E9AB1D" }}
+      name="إجمالي الشحنات"
+    />
+
+    {/* خطوط كل مستخدم */}
+    {chartData.length > 0 &&
+      Object.keys(chartData[0])
+        .filter((key) => key !== "month" && key !== "shipments")
+        .map((user, index) => (
+          <Line
+            key={user}
+            type="monotone"
+            dataKey={user}
+            strokeWidth={3}
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+            name={user}
+            stroke={`hsl(${(index * 80) % 360}, 70%, 45%)`}
+            animationDuration={1200}
+          />
+        ))}
+  </LineChart>
+</ResponsiveContainer>
+
+
       </motion.div>
     </div>
   );

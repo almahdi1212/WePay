@@ -1,8 +1,11 @@
 // 📁 src/api/config.js
 
-export const API_BASE_URL = "https://wepay-backend-y41w.onrender.com/api";
+// ✅ استيراد الرابط من .env
+export const API_PREFIX = import.meta.env.VITE_API_PREFIX || "http://127.0.0.1:8000/api";
 
-// دالة عامة للطلبات GET وPOST وPUT وDELETE
+console.log("✅ API Prefix:", API_PREFIX); // فقط للتحقق
+
+// ✅ دالة عامة للطلبات GET وPOST وPUT وDELETE (اختياري)
 export async function apiRequest(endpoint, method = "GET", data = null) {
   const options = {
     method,
@@ -16,7 +19,8 @@ export async function apiRequest(endpoint, method = "GET", data = null) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    // ✅ استخدم البريفكس الصحيح هنا
+    const response = await fetch(`${API_PREFIX}${endpoint}`, options);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);

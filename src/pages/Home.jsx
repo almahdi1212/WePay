@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LuMegaphone, LuTarget, LuAward } from "react-icons/lu";
 import { FaRocket } from "react-icons/fa6";
+import FloatingOrderButton from "../components/FloatingOrderButton"; // ✅ زر الطلب الثابت
 
 /**
  * Home.jsx
@@ -23,7 +24,6 @@ export default function Home() {
         const res = await fetch("https://wepay-backend-y41w.onrender.com/api/updates");
         const data = await res.json();
 
-        // دعم شكل الاستجابة { success: true, data: [...] } أو مصفوفة مباشرة
         if (data === null) {
           setUpdates([]);
         } else if (Array.isArray(data)) {
@@ -33,7 +33,6 @@ export default function Home() {
         } else if (data.data && Array.isArray(data.data)) {
           setUpdates(data.data);
         } else {
-          // محاولة استخراج إن كان هناك مفتاح باسم updates أو similar
           const possible = data.updates || data.results || [];
           setUpdates(Array.isArray(possible) ? possible : []);
         }
@@ -49,7 +48,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 overflow-hidden">
+    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 overflow-hidden">
       {/* ===== القسم العلوي (Hero) ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
         {/* النصوص */}
@@ -99,7 +98,6 @@ export default function Home() {
               viewBox="0 0 400 400"
               className="w-full h-auto"
             >
-              {/* الصندوق (تصميم خطي نظيف) */}
               <g stroke="#CFCFCF" strokeWidth="4" fill="none" transform="translate(0,20)">
                 <path d="M85 150 L200 100 L315 150 L200 200 Z" />
                 <path d="M85 150 L85 250 L200 300 L200 200 Z" />
@@ -109,7 +107,6 @@ export default function Home() {
                 <path d="M215 288 L230 278" />
               </g>
 
-              {/* دبوس الموقع مع نبض وتموضع أعلى قليلاً */}
               <g transform="translate(200,50)">
                 <circle
                   cx="0"
@@ -119,8 +116,8 @@ export default function Home() {
                   stroke="#E9AB1D"
                   strokeWidth="3"
                 >
-                  <animate attributeName="r" from="12" to="30" dur="1.5s" begin="0s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="1" to="0" dur="1.5s" begin="0s" repeatCount="indefinite" />
+                  <animate attributeName="r" from="12" to="30" dur="1.5s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="1" to="0" dur="1.5s" repeatCount="indefinite" />
                 </circle>
 
                 <path
@@ -153,7 +150,6 @@ export default function Home() {
           <LuMegaphone className="text-3xl sm:text-4xl" /> آخر التحديثات
         </h2>
 
-        {/* loading / error / no-updates handling */}
         {loadingUpdates ? (
           <p className="text-center text-gray-500">جاري تحميل التحديثات...</p>
         ) : updatesError ? (
@@ -228,7 +224,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 text-center px-2 sm:px-0">
-            {/* بطاقة رؤيتنا */}
+            {/* رؤيتنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -247,7 +243,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* بطاقة مهمتنا */}
+            {/* مهمتنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -266,7 +262,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* بطاقة قيمنا */}
+            {/* قيمنا */}
             <motion.div
               whileHover={{ y: -8, scale: 1.03 }}
               className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
@@ -291,6 +287,9 @@ export default function Home() {
           </motion.p>
         </div>
       </motion.section>
+
+      {/* ✅ زر الطلب الثابت */}
+      <FloatingOrderButton />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaPlus, FaTrash, FaEdit, FaSearch } from "react-icons/fa";
 import { apiRequest } from "../../api/api";
+import { useNavigate } from "react-router-dom"; // ✅ إضافة التوجيه
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -10,6 +11,15 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate(); // ✅ لاستخدام navigate
+
+  // 🧩 حماية الوصول للصفحة - فقط admin يمكنه المشاهدة
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (username !== "admin") {
+      navigate("/dashboard"); // 🚫 إعادة التوجيه إذا لم يكن admin
+    }
+  }, [navigate]);
 
   // 🟢 جلب المستخدمين
   async function fetchUsers() {
@@ -55,7 +65,7 @@ export default function Users() {
 
       await apiRequest(endpoint, method, body, true);
 
-      showToast(editingUser ? "تم تحديث المستخدم بنجاح ✅" : "تمت إضافة مستخدم جديد 🎉");
+      showToast(editingUser ? "تم تحديث المستخدم بنجاح ✅" : "تمت إضافة مستخدم جديد ");
       setForm({ name: "", username: "", password: "" });
       setIsModalOpen(false);
       setEditingUser(null);
