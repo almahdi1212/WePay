@@ -7,6 +7,7 @@ import {
   FaWhatsapp,
   FaTiktok,
   FaMapMarkerAlt,
+  FaFacebookF,
   FaClock,
   FaQuestionCircle,
   FaChevronDown,
@@ -109,31 +110,34 @@ export default function Support() {
           }}
         >
           {[
-            {
-              icon: <FaWhatsapp />,
-              title: "واتساب",
-              desc: "0915771795",
-              link: "https://wa.me/218915771795",
-            },
-            {
-              icon: <FaTiktok />,
-              title: "تيك توك",
-              desc: "@wepay_ly",
-              link: "https://www.tiktok.com/@wepay_ly",
-            },
-            {
-              icon: <FaEnvelope />,
-              title: "البريد الإلكتروني",
-              desc: "support@wepay.ly",
-              link: "mailto:support@wepay.ly",
-            },
-            {
-              icon: <FaPhoneAlt />,
-              title: "الهاتف",
-              desc: "0915771795",
-              link: "tel:+218915771795",
-            },
-          ].map((item, index) => (
+  {
+    icon: <FaWhatsapp />,
+    title: "واتساب",
+    desc: "0915771795",
+    link: "https://wa.me/218915771795",
+  },
+    {
+    icon: <FaFacebookF />,
+    title: "فيسبوك",
+    desc: "We Shein Libya",
+    link: "https://www.facebook.com/wesheinlibya",
+  },
+  {
+    icon: <FaTiktok />,
+    title: "تيك توك",
+    desc: "@wepay_ly",
+    link: "https://www.tiktok.com/@wepay_ly",
+  },
+  {
+    icon: <FaEnvelope />,
+    title: "البريد الإلكتروني",
+    desc: "info@sheinlibya.com",
+    link: "mailto:info@sheinlibya.com",
+  },
+
+]
+
+.map((item, index) => (
             <motion.a
               key={index}
               href={item.link}

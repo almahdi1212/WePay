@@ -14,6 +14,8 @@ import {
 } from "react-icons/fa";
 import { apiRequest } from "../api/api"; // ✅ استخدام الدالة الموحدة
 import FloatingOrderButton from "../components/FloatingOrderButton"; // ✅ زر الطلب الثابت
+import guideImg from "../assets/shein-guide.png";
+
 
 export default function Calculator() {
   const [usdPrice, setUsdPrice] = useState("");
@@ -25,6 +27,8 @@ export default function Calculator() {
   const [categories, setCategories] = useState([]);
   const [exchangeRate, setExchangeRate] = useState(6.8);
   const [shippingRate, setShippingRate] = useState(12);
+  const [showNote, setShowNote] = useState(false);
+
 
   // 🔹 جلب البيانات من API (التصنيفات + سعر الصرف + سعر الشحن)
   useEffect(() => {
@@ -172,9 +176,18 @@ export default function Calculator() {
           {/* سعر السلة */}
           <div>
             <label className="flex items-center gap-2 mb-2 font-semibold text-gray-800 text-sm sm:text-base">
-              <FaDollarSign className="text-[#E9AB1D]" />
-              سعر السلة بالدولار (USD)
-            </label>
+  <FaDollarSign className="text-[#E9AB1D]" />
+  سعر الطلبية بالدولار
+
+  <button
+    onClick={() => setShowNote(true)}
+    className="text-blue-500 hover:text-blue-600 text-xs sm:text-sm flex items-center gap-1 underline"
+  >
+    هام جداً
+    <FaInfoCircle />
+  </button>
+</label>
+
             <input
               type="number"
               value={usdPrice}
@@ -201,10 +214,21 @@ export default function Calculator() {
           {/* اختيار الصنف */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
             <select
-              value={itemType}
-              onChange={(e) => setItemType(e.target.value)}
-              className="flex-1 p-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E9AB1D] text-sm"
-            >
+  value={itemType}
+  onChange={(e) => setItemType(e.target.value)}
+  className="
+    w-full                /* يجعلها كبيرة في الموبايل */
+    sm:flex-1             /* يرجعها كما كانت على الديسكتوب */
+    p-3 
+    border border-gray-200 
+    rounded-full 
+    focus:outline-none 
+    focus:ring-2 
+    focus:ring-[#E9AB1D] 
+    text-sm
+  "
+>
+
               <option value="">اختر الصنف...</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.name}>
@@ -354,6 +378,63 @@ export default function Calculator() {
             </p>
           </div>
         </motion.div>
+{showNote && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+    <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-lg w-full text-right relative animate-[fadeIn_0.25s_ease]">
+
+      {/* زر الإغلاق */}
+      <button
+        onClick={() => setShowNote(false)}
+        className="absolute left-4 top-4 text-gray-500 hover:text-gray-700 text-xl"
+      >
+        ✕
+      </button>
+
+      {/* العنوان */}
+      <h2 className="text-2xl font-bold mb-4 text-[#E9AB1D] flex items-center gap-2">
+        <FaInfoCircle className="text-[#E9AB1D]" />
+        تنبيه مهم قبل إدخال سعر السلة
+      </h2>
+
+      {/* الصورة */}
+      <div className="w-full flex justify-center mb-4">
+        <img
+          src={guideImg}
+          alt="كيفية حساب السعر"
+          className="w-64 sm:w-72 rounded-xl shadow-md border border-[#E9AB1D]/30"
+        />
+      </div>
+
+      {/* المحتوى */}
+      <div className="space-y-3 text-gray-700 text-sm leading-relaxed">
+        <p>
+          لضمان دقة الحساب، من المهم التأكد من أن إعدادات تطبيق <strong>SHEIN</strong>
+          مضبوطة بشكل صحيح عند عرض سعر السلة.
+        </p>
+
+        <ul className="list-disc pr-5 space-y-1">
+          <li>افتح إعدادات حسابك داخل التطبيق.</li>
+          <li>غيّر الموقع إلى: <strong>United Arab Emirates</strong>.</li>
+          <li>تأكد أن العملة المختارة هي: <strong>USD – الدولار الأمريكي</strong>.</li>
+        </ul>
+
+        <p>
+          ملاحظة: في حال كنت مسجل دخول بحساب شخصي، قد تظهر أسعار مختلفة بسبب عروض مرتبطة بالحساب، لذلك يفضّل تسجيل الخروج قبل عملية الحساب.
+        </p>
+      </div>
+
+      {/* زر الإغلاق */}
+      <button
+        onClick={() => setShowNote(false)}
+        className="w-full mt-6 bg-[#E9AB1D] hover:bg-[#d49616] text-white py-3 rounded-full font-semibold transition"
+      >
+        فهمت
+      </button>
+    </div>
+  </div>
+)}
+
+
       </motion.div>
 
       {/* ✅ زر الطلب الثابت */}

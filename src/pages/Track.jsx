@@ -108,7 +108,8 @@ export default function Track() {
       >
         {/* العنوان */}
         <motion.h1
-          className="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-snug text-center flex flex-wrap items-center justify-center gap-2 mb-6"
+  className="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-snug text-center flex flex-wrap items-center justify-center gap-3 mb-1 pt-10 pb-2"
+
           style={{
             background: "linear-gradient(90deg, #E9AB1D, #c98a00, #E9AB1D)",
             backgroundSize: "200% auto",
@@ -125,7 +126,7 @@ export default function Track() {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="inline-flex"
             >
-              <FaShippingFast className="text-[#E9AB1D] text-2xl" />
+              <FaShippingFast className="text-[#E9AB1D] text-5xl" />
             </motion.span>
           </span>
         </motion.h1>
