@@ -1,80 +1,95 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LuMegaphone, LuTarget, LuAward } from "react-icons/lu";
-import { FaRocket } from "react-icons/fa6";
-import FloatingOrderButton from "../components/FloatingOrderButton"; // ✅ زر الطلب الثابت
+import { Megaphone } from "lucide-react";
+import { LuMegaphone } from "react-icons/lu";
+import FloatingOrderButton from "../components/FloatingOrderButton";
 
-/**
- * Home.jsx
- * الصفحة الرئيسية — متكاملة + جلب التحديثات من /api/updates
- */
+/** زر تسجيل الدخول */
+const LoginButton = () => (
+  <a
+    href="/login"
+    className="
+      fixed top-3 right-3 sm:top-4 sm:right-4 z-50
+      bg-white text-[#E9AB1D]
+      border border-[#E9AB1D]/40
+      shadow-md
+      rounded-full
+      flex items-center gap-2
+      px-4 py-2 sm:px-5 sm:py-2.5
+      text-sm sm:text-base
+      font-semibold
+      transition-all duration-300
+      hover:bg-[#E9AB1D] hover:text-white
+    "
+    style={{ backdropFilter: 'blur(6px)' }}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z" />
+    </svg>
+    دخول
+  </a>
+);
 
 export default function Home() {
+
   const [updates, setUpdates] = useState([]);
   const [loadingUpdates, setLoadingUpdates] = useState(true);
-  const [updatesError, setUpdatesError] = useState("");
 
   useEffect(() => {
-    const fetchUpdates = async () => {
-      setLoadingUpdates(true);
-      setUpdatesError("");
-
-      try {
-        const res = await fetch("https://wepay-backend-y41w.onrender.com/api/updates");
-        const data = await res.json();
-
-        if (data === null) {
-          setUpdates([]);
-        } else if (Array.isArray(data)) {
-          setUpdates(data);
-        } else if (data.success && Array.isArray(data.data)) {
-          setUpdates(data.data);
-        } else if (data.data && Array.isArray(data.data)) {
-          setUpdates(data.data);
-        } else {
-          const possible = data.updates || data.results || [];
-          setUpdates(Array.isArray(possible) ? possible : []);
-        }
-      } catch (err) {
-        console.error("Error fetching updates:", err);
-        setUpdatesError("حدث خطأ أثناء جلب التحديثات. حاول لاحقاً.");
-      } finally {
-        setLoadingUpdates(false);
-      }
-    };
-
-    fetchUpdates();
+    fetch("https://wepay-backend-y41w.onrender.com/api/updates")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setUpdates(data);
+        else if (Array.isArray(data.data)) setUpdates(data.data);
+        else setUpdates([]);
+      })
+      .catch(() => setUpdates([]))
+      .finally(() => setLoadingUpdates(false));
   }, []);
 
   return (
-    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 overflow-hidden">
-      {/* ===== القسم العلوي (Hero) ===== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
-        {/* النصوص */}
+    <div className="home-container relative max-w-7xl mx-auto px-4 sm:px-6 pb-20 overflow-hidden">
+
+      {/* زر الدخول */}
+      <LoginButton />
+
+      {/* ====================== HERO ====================== */}
+      <div
+        className="
+          hero-section
+          grid grid-cols-1 md:grid-cols-2
+          gap-6 md:gap-12
+          items-center
+          min-h-[55vh]
+          mt-10
+        "
+      >
+
+        {/* نصوص الهيرو */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center md:text-right"
+          transition={{ duration: 0.8 }}
+          className="
+            text-center md:text-right px-2
+            mt-10 md:-mt-10
+          "
         >
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 leading-snug"
-            style={{ color: "#1A1A1A", lineHeight: 1.05 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-snug"
+            style={{ color: "#1A1A1A" }}
           >
             تابع شحنتك{" "}
             <span className="text-[#E9AB1D]">بسهولة وسرعة ⚡</span>
           </h1>
 
           <p
-            className="text-base sm:text-lg mb-8 leading-relaxed px-2 sm:px-0"
+            className="text-base sm:text-lg mb-6 leading-relaxed px-2 sm:px-0"
             style={{ color: "#4B4B4B" }}
           >
-            مع{" "}
-            <span className="font-semibold text-[#E9AB1D]">We Pay</span>، وكيل{" "}
-            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر
-            لك تجربة شراء وشحن مريحة وآمنة من جميع المتاجر العالمية. تابع
-            شحنتك لحظة بلحظة عبر نظام تتبع دقيق وسهل الاستخدام.
+            مع <span className="font-semibold text-[#E9AB1D]">We Pay</span>، وكيل{" "}
+            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة من جميع المتاجر العالمية. تابع شحنتك لحظة بلحظة عبر نظام تتبع دقيق وسهل الاستخدام.
           </p>
 
           <Link
@@ -85,48 +100,32 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* الصورة التوضيحية (SVG) */}
+        {/* صورة الصندوق + الدبوس */}
         <motion.div
-          className="flex justify-center mt-8 md:mt-10"
+          className="flex justify-center mt-3 md:mt-0"
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+          transition={{ duration: 1 }}
         >
-          <div className="relative w-full max-w-[20rem] sm:max-w-md md:max-w-2xl flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 400 400"
-              className="w-full h-auto"
-            >
+          <div className="w-full max-w-[17rem] sm:max-w-[20rem] md:max-w-[28rem]">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" className="w-full">
               <g stroke="#CFCFCF" strokeWidth="4" fill="none" transform="translate(0,20)">
                 <path d="M85 150 L200 100 L315 150 L200 200 Z" />
                 <path d="M85 150 L85 250 L200 300 L200 200 Z" />
                 <path d="M315 150 L315 250 L200 300" />
-                <path d="M230 130 L270 145" />
-                <path d="M215 275 L230 265" />
-                <path d="M215 288 L230 278" />
               </g>
 
               <g transform="translate(200,50)">
-                <circle
-                  cx="0"
-                  cy="13"
-                  r="12"
-                  fill="none"
-                  stroke="#E9AB1D"
-                  strokeWidth="3"
-                >
-                  <animate attributeName="r" from="12" to="30" dur="1.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="1" to="0" dur="1.5s" repeatCount="indefinite" />
+                <circle cx="0" cy="13" r="12" stroke="#E9AB1D" strokeWidth="3" fill="none">
+                  <animate attributeName="r" from="12" to="28" dur="1.6s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="1" to="0" dur="1.6s" repeatCount="indefinite" />
                 </circle>
 
                 <path
                   d="M0 -40 C28 -40 50 -15 50 13 C50 40 0 90 0 90 C0 90 -50 40 -50 13 C-50 -15 -28 -40 0 -40 Z"
-                  fill="none"
                   stroke="#E9AB1D"
                   strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  fill="none"
                 />
                 <circle cx="0" cy="13" r="10" fill="#E9AB1D" />
               </g>
@@ -135,161 +134,93 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ===== آخر التحديثات (Updates) ===== */}
+      {/* ====================== آخر التحديثات ====================== */}
       <motion.section
-        className="mt-12 sm:mt-16"
+        className="updates-section mt-[-10px] px-2 sm:px-0"
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
       >
-        <h2
-          className="text-2xl sm:text-3xl font-extrabold mb-8 sm:mb-10 text-center flex items-center justify-center gap-2"
-          style={{ color: "#E9AB1D" }}
-        >
-          <LuMegaphone className="text-3xl sm:text-4xl" /> آخر التحديثات
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-[#E9AB1D] mb-12 flex items-center justify-center gap-2">
+          <LuMegaphone className="text-3xl sm:text-4xl" />
+          آخر التحديثات
         </h2>
 
         {loadingUpdates ? (
-          <p className="text-center text-gray-500">جاري تحميل التحديثات...</p>
-        ) : updatesError ? (
-          <p className="text-center text-red-600">{updatesError}</p>
+          <p className="text-center text-gray-500">جاري التحميل...</p>
         ) : updates.length === 0 ? (
-          <p className="text-center text-gray-400 italic">لا توجد تحديثات حالياً.</p>
+          <p className="text-center text-gray-400">لا توجد تحديثات.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0">
-            {updates.map((update, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-6">
+            {updates.map((u, index) => (
               <motion.div
-                key={update.id ?? index}
-                className="p-5 sm:p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 text-center sm:text-right"
+                key={index}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.18 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="
+                  relative p-6 sm:p-8 rounded-3xl bg-white
+                  shadow-[0_6px_20px_rgba(0,0,0,0.06)]
+                  border border-[#f6d98d]/40
+                  hover:shadow-[0_10px_30px_rgba(233,171,29,0.25)]
+                  hover:-translate-y-1 transition-all duration-300
+                "
               >
-                <div className="text-sm text-gray-400 mb-2">
-                  {update.date
-                    ? new Date(update.date).toLocaleDateString("ar-LY", {
-                        year: "numeric",
-                        month: "long",
-                      })
-                    : ""}
+                {/* تاريخ */}
+                <div className="absolute -top-4 right-4 bg-[#E9AB1D] text-white w-14 h-14 flex flex-col items-center justify-center rounded-full shadow-md">
+                  <span className="text-sm font-bold">{new Date(u.date).getFullYear()}</span>
+                  <span className="text-xs">
+                    {new Date(u.date).toLocaleDateString("ar-LY", { month: "long" })}
+                  </span>
                 </div>
-                <div className="text-base sm:text-lg font-semibold text-[#1A1A1A] mb-1">
-                  {update.title}
+
+                <div className="mt-8 text-right">
+                  <h3
+                    className="text-xl font-bold text-[#1A1A1A] mb-2 flex items-center gap-2 justify-start"
+                    style={{ direction: 'rtl' }}
+                  >
+                    <Megaphone className="text-[#E9AB1D] w-5 h-5" />
+                    <span>{u.title}</span>
+                  </h3>
+
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {u.description}
+                  </p>
                 </div>
-                <p className="text-gray-600 text-sm sm:text-base">
-                  {update.description}
-                </p>
+
               </motion.div>
             ))}
           </div>
         )}
       </motion.section>
 
-      {/* ===== من نحن ===== */}
-      <motion.section
-        className="mt-16 sm:mt-20 relative py-16 sm:py-20"
-        initial={{ opacity: 0, y: 80 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-[#fffaf0] to-[#fff3d2] opacity-95"></div>
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
-          <motion.h2
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-6 sm:mb-8"
-            style={{
-              background: "linear-gradient(to right, #E9AB1D, #c98a00)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            👥 من نحن
-          </motion.h2>
-
-          <motion.p
-            className="text-base sm:text-lg md:text-xl text-center leading-relaxed font-medium text-[#2C2C2C] max-w-3xl mx-auto mb-10 sm:mb-14 px-2 sm:px-0"
-          >
-            <span className="font-bold text-[#E9AB1D]">We Pay</span> هي الشركة
-            الليبية الرائدة في مجال التسوق الدولي، وتعمل كوكيل رسمي لمنصة{" "}
-            <span className="font-bold text-[#E9AB1D]">Shein</span> داخل ليبيا.
-            نتيح لك شراء المنتجات من Shein ومن أي موقع عالمي، ونتكفل بعملية
-            الدفع والشحن والتوصيل إلى باب بيتك بكل سهولة وموثوقية.
-          </motion.p>
-
-          <div className="flex justify-center mb-12 sm:mb-16">
-            <div className="h-[3px] w-20 sm:w-24 bg-gradient-to-r from-transparent via-[#E9AB1D] to-transparent rounded-full"></div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 text-center px-2 sm:px-0">
-            {/* رؤيتنا */}
-            <motion.div
-              whileHover={{ y: -8, scale: 1.03 }}
-              className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
-            >
-              <div className="flex justify-center mb-6">
-                <div className="bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white shadow-md">
-                  <FaRocket className="text-xl sm:text-2xl" />
-                </div>
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#1A1A1A] mb-3">
-                رؤيتنا
-              </h3>
-              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                أن نجعل التسوق من المواقع العالمية متاحًا لكل الليبيين بسهولة
-                وأمان، مع توفير حلول شحن ودفع ذكية ومبتكرة.
-              </p>
-            </motion.div>
-
-            {/* مهمتنا */}
-            <motion.div
-              whileHover={{ y: -8, scale: 1.03 }}
-              className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
-            >
-              <div className="flex justify-center mb-6">
-                <div className="bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white shadow-md">
-                  <LuTarget className="text-2xl" />
-                </div>
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#1A1A1A] mb-3">
-                مهمتنا
-              </h3>
-              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                تقديم خدمات متكاملة من الشراء وحتى التوصيل، مع نظام تتبع شحنات
-                متطور يمنح عملاءنا الثقة والراحة في كل خطوة.
-              </p>
-            </motion.div>
-
-            {/* قيمنا */}
-            <motion.div
-              whileHover={{ y: -8, scale: 1.03 }}
-              className="bg-white/80 border border-[#E9AB1D]/30 rounded-3xl p-8 sm:p-10 shadow-md hover:shadow-[0_15px_35px_rgba(233,171,29,0.25)] transition-all duration-500"
-            >
-              <div className="flex justify-center mb-6">
-                <div className="bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white shadow-md">
-                  <LuAward className="text-xl sm:text-2xl" />
-                </div>
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#1A1A1A] mb-3">
-                قيمنا
-              </h3>
-              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                الموثوقية، الشفافية، الدقة، والالتزام بتقديم تجربة تسوق عالمية
-                بمعايير عالية داخل ليبيا.
-              </p>
-            </motion.div>
-          </div>
-
-          <motion.p className="mt-12 sm:mt-16 text-center text-[#E9AB1D] font-semibold text-base sm:text-lg italic px-4">
-            “مع We Pay، التسوق من الخارج أصبح أقرب من أي وقت مضى.”
-          </motion.p>
-        </div>
-      </motion.section>
-
-      {/* ✅ زر الطلب الثابت */}
       <FloatingOrderButton />
+
+      {/* CSS لتعديل الديسكتوب فقط */}
+      <style>
+        {`
+        @media (min-width: 1024px) {
+
+          .home-container {
+            height: auto !important;
+            display: block !important;
+          }
+
+          .hero-section {
+            margin-top: 20px !important; 
+          }
+
+          .updates-section {
+            margin-top: -30px !important;
+          }
+
+          body {
+            overflow-y: auto !important;
+          }
+        }
+        `}
+      </style>
+
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { apiRequest } from "../../api/api";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   useTable,
   useSortBy,
@@ -30,6 +31,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+
 
 
 /* ======= خريطة الحالات ======= */
@@ -133,6 +135,10 @@ export default function DashboardShipments() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  // قراءة الـ query string وتهيئة التنقّل
+const location = useLocation();
+const navigate = useNavigate();
+
 
 
   const [form, setForm] = useState({
@@ -174,11 +180,35 @@ export default function DashboardShipments() {
       console.error("فشل في جلب المستخدمين", err);
     }
   };
+useEffect(() => {
+  fetchShipments();
+  fetchUsers();
+}, []);
 
-  useEffect(() => {
-    fetchShipments();
-    fetchUsers();
-  }, []);
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  if (params.get("add") === "true") {
+
+    setEditingRow(null);
+    setForm({
+      customer_name: "",
+      customer_whatsapp: "",
+      customer_location: "",
+      price_usd: "",
+      price_lyd: "",
+      quantity: "",
+      description: "",
+      user_id: "",
+      status_code: 1,
+    });
+
+    setIsModalOpen(true);
+
+    // إزالة ?add=true من الرابط
+    navigate(location.pathname, { replace: true });
+  }
+}, [location.search, navigate, location.pathname]);
+
 
   // ✅ بيانات الرسم البياني
   const chartData = useMemo(() => {
