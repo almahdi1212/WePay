@@ -1,0 +1,21 @@
+{
+  "short_name": "WePay",
+  "name": "WePay Libya",
+  "icons": [
+    {
+      "src": "/favicon-transparent.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/favicon-transparent.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#E9AB1D"
+}

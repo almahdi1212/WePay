@@ -73,7 +73,7 @@ export default function Home() {
 
           <p className="text-base sm:text-lg mb-6 leading-relaxed px-2 sm:px-0" style={{ color: "#4B4B4B" }}>
             مع <span className="font-semibold text-[#E9AB1D]">We Pay</span>، وكيل{" "}
-            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة.
+            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة, تابع شحنتك من لحظة الطلب حتى وصولها إلى باب منزلك, عبر نظام تتبع دقيق وسهل الاستخدام.
           </p>
 
           <Link
