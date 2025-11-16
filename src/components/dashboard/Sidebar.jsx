@@ -10,7 +10,6 @@ import {
   FaPlusCircle,
 } from "react-icons/fa";
 
-
 export default function Sidebar() {
   const navigate = useNavigate();
 
@@ -22,7 +21,6 @@ export default function Sidebar() {
 
   const username = localStorage.getItem("username");
 
-  // ✅ الأقسام بالترتيب (الزر الجديد يضاف قبل "اللوحة")
   const items = [
     { to: "/dashboard", label: "اللوحة", icon: <FaTachometerAlt /> },
     { to: "/dashboard/shipments", label: "الشحنات", icon: <FaBoxOpen /> },
@@ -46,33 +44,36 @@ export default function Sidebar() {
 
   return (
     <nav className="flex flex-col justify-between h-full min-h-screen px-5 py-10 bg-white">
+
       {/* ====== Logo Section ====== */}
-      <div className="mt-14 mb-10 flex flex-col items-center md:items-start">
-        <div className="flex items-center gap-4">
-          <div className="bg-gradient-to-b from-[#E9AB1D] to-[#c98a00] text-white rounded-xl w-14 h-14 flex items-center justify-center text-3xl font-extrabold shadow-md">
-            W
-          </div>
-          <div className="hidden md:block text-3xl font-extrabold text-[#1A1A1A] tracking-wide">
-            We Pay
-          </div>
-        </div>
-      </div>
+<div className="mt-14 mb-10 flex flex-col items-center md:items-start">
+  <div className="flex items-center gap-0.1">
+  <img
+    src="/favicon-transparent.png"
+    alt="Logo"
+    className="w-16 h-16 object-contain relative top-[4px]"
+  />
 
-      {/* ✅ زر إضافة شحنة جديدة */}
+  <div className="hidden md:block text-3xl font-extrabold text-[#1A1A1A] tracking-wide">
+    We Pay
+  </div>
+</div>
+
+</div>
+
+      {/* زر إضافة شحنة */}
       <button
-  onClick={() => navigate("/dashboard/shipments?add=true")}
-  className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white py-3 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.03] transition-all duration-300 font-semibold text-lg mb-8"
->
-  <FaPlusCircle className="text-xl" />
-  <span className="hidden md:inline">إضافة شحنة جديدة</span>
-</button>
+        onClick={() => navigate("/dashboard/shipments?add=true")}
+        className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white py-3 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.03] transition-all duration-300 font-semibold text-lg mb-8"
+      >
+        <FaPlusCircle className="text-xl" />
+        <span className="hidden md:inline">إضافة شحنة جديدة</span>
+      </button>
 
-
-      {/* ====== Navigation Links ====== */}
+      {/* الروابط */}
       <div className="flex-1 flex flex-col justify-start mt-4 space-y-6">
         {items.map((it) =>
           it.action ? (
-            // 🔴 زر تسجيل الخروج
             <button
               key={it.label}
               onClick={it.action}
@@ -105,7 +106,6 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* ====== Footer Section ====== */}
       <footer className="mt-10 text-xs text-gray-400 text-center border-t border-gray-100 pt-4 w-full">
         © {new Date().getFullYear()} We Pay
       </footer>

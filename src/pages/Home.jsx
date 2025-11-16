@@ -1,3 +1,5 @@
+/* --- كامل الكود جاهز --- */
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -55,41 +57,23 @@ export default function Home() {
       <LoginButton />
 
       {/* ====================== HERO ====================== */}
-      <div
-        className="
-          hero-section
-          grid grid-cols-1 md:grid-cols-2
-          gap-6 md:gap-12
-          items-center
-          min-h-[55vh]
-          mt-10
-        "
-      >
+      <div className="hero-section grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center min-h-[55vh] mt-10">
 
         {/* نصوص الهيرو */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="
-            text-center md:text-right px-2
-            mt-10 md:-mt-10
-          "
+          className="text-center md:text-right px-2 mt-10 md:-mt-10"
         >
-          <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-snug"
-            style={{ color: "#1A1A1A" }}
-          >
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-snug" style={{ color: "#1A1A1A" }}>
             تابع شحنتك{" "}
             <span className="text-[#E9AB1D]">بسهولة وسرعة ⚡</span>
           </h1>
 
-          <p
-            className="text-base sm:text-lg mb-6 leading-relaxed px-2 sm:px-0"
-            style={{ color: "#4B4B4B" }}
-          >
+          <p className="text-base sm:text-lg mb-6 leading-relaxed px-2 sm:px-0" style={{ color: "#4B4B4B" }}>
             مع <span className="font-semibold text-[#E9AB1D]">We Pay</span>، وكيل{" "}
-            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة من جميع المتاجر العالمية. تابع شحنتك لحظة بلحظة عبر نظام تتبع دقيق وسهل الاستخدام.
+            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة.
           </p>
 
           <Link
@@ -100,38 +84,72 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* صورة الصندوق + الدبوس */}
+        {/* ===================== البوكس + الدبوس بالشعار ===================== */}
         <motion.div
           className="flex justify-center mt-3 md:mt-0"
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
         >
-          <div className="w-full max-w-[17rem] sm:max-w-[20rem] md:max-w-[28rem]">
+          <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[30rem] relative">
+
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" className="w-full">
+
+              {/* box */}
               <g stroke="#CFCFCF" strokeWidth="4" fill="none" transform="translate(0,20)">
                 <path d="M85 150 L200 100 L315 150 L200 200 Z" />
                 <path d="M85 150 L85 250 L200 300 L200 200 Z" />
                 <path d="M315 150 L315 250 L200 300" />
               </g>
 
-              <g transform="translate(200,50)">
-                <circle cx="0" cy="13" r="12" stroke="#E9AB1D" strokeWidth="3" fill="none">
-                  <animate attributeName="r" from="12" to="28" dur="1.6s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="1" to="0" dur="1.6s" repeatCount="indefinite" />
-                </circle>
+{/* 🔥 دبوس مكبّر والدائرة بداخله تماماً */}
+<g transform="translate(200,50)">  {/* ← رفع البوضع للأسفل */}
+  
+  {/* نبض خارجي */}
+  <circle cx="0" cy="0" r="40" stroke="#E9AB1D" strokeWidth="3" fill="none">
+    
+  </circle>
 
-                <path
-                  d="M0 -40 C28 -40 50 -15 50 13 C50 40 0 90 0 90 C0 90 -50 40 -50 13 C-50 -15 -28 -40 0 -40 Z"
-                  stroke="#E9AB1D"
-                  strokeWidth="5"
-                  fill="none"
-                />
-                <circle cx="0" cy="13" r="10" fill="#E9AB1D" />
-              </g>
+  {/* رأس الدبوس — مكبّر ليستوعب الدائرة */}
+  <path
+  d="
+    M 0 -45
+    C 28 -45 48 -25 48 4
+    C 48 36 0 90 0 90
+    C 0 90 -48 36 -48 4
+    C -48 -25 -28 -45 0 -45
+    Z
+  "
+  fill="white"
+  stroke="#E9AB1D"
+  strokeWidth="4"
+/>
+
+
+  {/* نبض خارجي */}
+                <circle cx="0" cy="0" r="26" stroke="#E9AB1D" strokeWidth="3" fill="none">
+                  <animate attributeName="r" from="22" to="52" dur="1.8s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.9" to="0" dur="1.8s" repeatCount="indefinite" />
+                </circle>
+                                {/* رأس الدبوس — مكبّر ليستوعب الشعار */}
+                <circle cx="0" cy="0" r="26" fill="white" stroke="#E9AB1D" strokeWidth="3" />
+                                {/* شعار الشركة داخل الدائرة (يناسب الحجم الجديد) */}
+                <image
+                  href="/favicon-transparent.png"
+                  x="-22"
+                  y="-22"
+                  width="44"
+                  height="44"
+                />  
+
+</g>
+
+
             </svg>
+
           </div>
         </motion.div>
+
       </div>
 
       {/* ====================== آخر التحديثات ====================== */}
@@ -141,6 +159,7 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
+
         <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-[#E9AB1D] mb-12 flex items-center justify-center gap-2">
           <LuMegaphone className="text-3xl sm:text-4xl" />
           آخر التحديثات
@@ -166,7 +185,6 @@ export default function Home() {
                   hover:-translate-y-1 transition-all duration-300
                 "
               >
-                {/* تاريخ */}
                 <div className="absolute -top-4 right-4 bg-[#E9AB1D] text-white w-14 h-14 flex flex-col items-center justify-center rounded-full shadow-md">
                   <span className="text-sm font-bold">{new Date(u.date).getFullYear()}</span>
                   <span className="text-xs">
@@ -175,10 +193,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-8 text-right">
-                  <h3
-                    className="text-xl font-bold text-[#1A1A1A] mb-2 flex items-center gap-2 justify-start"
-                    style={{ direction: 'rtl' }}
-                  >
+                  <h3 className="text-xl font-bold text-[#1A1A1A] mb-2 flex items-center gap-2 justify-start" style={{ direction: 'rtl' }}>
                     <Megaphone className="text-[#E9AB1D] w-5 h-5" />
                     <span>{u.title}</span>
                   </h3>
@@ -192,34 +207,10 @@ export default function Home() {
             ))}
           </div>
         )}
+
       </motion.section>
 
       <FloatingOrderButton />
-
-      {/* CSS لتعديل الديسكتوب فقط */}
-      <style>
-        {`
-        @media (min-width: 1024px) {
-
-          .home-container {
-            height: auto !important;
-            display: block !important;
-          }
-
-          .hero-section {
-            margin-top: 20px !important; 
-          }
-
-          .updates-section {
-            margin-top: -30px !important;
-          }
-
-          body {
-            overflow-y: auto !important;
-          }
-        }
-        `}
-      </style>
 
     </div>
   );

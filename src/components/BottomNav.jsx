@@ -15,8 +15,8 @@ export default function BottomNav() {
       <div className="flex justify-around items-center h-full px-2">
 
         <NavItem to="/" label="الرئيسية" icon={<Home size={20} />} />
-        <NavItem to="/track" label="تتبع" icon={<Truck size={20} />} />
-        <NavItem to="/calculator" label="حاسبة" icon={<Calculator size={20} />} />
+        <NavItem to="/track" label="تتبع الشحنة" icon={<Truck size={20} />} />
+        <NavItem to="/calculator" label="حاسبةالاسعار" icon={<Calculator size={20} />} />
         <NavItem to="/support" label="الدعم" icon={<Headset size={20} />} />
 
       </div>

@@ -58,11 +58,16 @@ export default function DashboardLayout() {
             ></div>
           </div>
 
-          {/* يسار: عنوان We Pay Dashboard */}
-          <div className="hidden md:flex items-center gap-3 ml-auto z-10">
-            <span className="text-[#E9AB1D] font-extrabold text-2xl">W</span>
-            <span className="font-semibold text-lg">We Pay Dashboard</span>
-          </div>
+{/* يسار: عنوان We Pay Dashboard */}
+<div className="hidden md:flex items-center gap-0.1 ml-auto z-10">
+  <img
+    src="/favicon-transparent.png"
+    alt="Logo"
+    className="w-10 h-10 object-contain -mt-0.1" // ← تكبير + خفض بسيط
+  />
+  <span className="font-semibold text-lg">We Pay Dashboard</span>
+</div>
+
 
           {/* يمين: الترحيب */}
           <div className="flex items-center gap-4 z-10">

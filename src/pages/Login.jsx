@@ -59,18 +59,26 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="relative z-10 bg-white/90 backdrop-blur-lg border border-[#E9AB1D]/20 shadow-[0_4px_25px_rgba(233,171,29,0.08)] rounded-3xl p-10 w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-[#E9AB1D] to-[#c98a00] text-white flex items-center justify-center rounded-2xl shadow-md text-2xl font-bold"
-          >
-            W
-          </motion.div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] mb-1">تسجيل الدخول</h1>
-          <p className="text-gray-500 text-sm">مرحبًا بك في لوحة تحكم WePay</p>
-        </div>
+<div className="text-center mb-8">
+  <motion.div
+    initial={{ scale: 0.8, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ delay: 0.2 }}
+    className="w-28 h-28 mx-auto mb-3 flex items-center justify-center"
+  >
+    <img
+      src="/favicon-transparent.png"
+      alt="Logo"
+      className="w-28 h-28 object-contain drop-shadow-lg"
+    />
+  </motion.div>
+
+  <h1 className="text-2xl font-extrabold text-[#1A1A1A] mb-1">
+    تسجيل الدخول
+  </h1>
+  <p className="text-gray-500 text-sm">مرحبًا بك في لوحة تحكم WePay</p>
+</div>
+
 
         {/* رسالة الخطأ */}
         {error && (
