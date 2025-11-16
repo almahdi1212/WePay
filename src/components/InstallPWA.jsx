@@ -25,7 +25,7 @@ export default function InstallPWA() {
 
   return (
     <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-[#E9AB1D] to-[#c98a00] text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-3 animate-fade-in">
-      <span className="font-semibold">📲 ثبّت التطبيق</span>
+      <span className="font-semibold"> ثبّت التطبيق</span>
       <button
         onClick={handleInstall}
         className="bg-white text-[#E9AB1D] font-bold px-3 py-1 rounded-xl"
