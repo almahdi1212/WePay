@@ -4,40 +4,56 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- 🟡 عنوان الموقع في نتائج البحث -->
+  <!-- 🟡 عنوان الموقع -->
   <title>Shein Libya | نوفر لك خدمة الشراء من شي إن في ليبيا</title>
 
-  <!-- 🟡 الوصف الرئيسي للموقع (Description) -->
+  <!-- 🟡 الوصف -->
   <meta name="description" content="Shein Libya | نوفر لك خدمة شراء وتتبع شحنات شي إن ونوفر أيضًا حاسبة أسعار لحساب منتجاتك">
 
+  <!-- 🟡 الكلمات المفتاحية -->
+  <meta name="keywords" content="shein, شي ان ليبيا, شراء من شي ان, شي ان ليبيا, Shein Libya">
 
-  <!-- 🟡 الكلمات المفتاحية (اختيارية ولكن مفيدة) -->
-  <meta name="keywords" 
-        content="shein, شي ان ليبيا, شراء من شي ان, شي ان ليبيا, Shein Libya">
-
-  <!-- 🟡 اللغة -->
   <meta name="language" content="ar" />
 
-  <!-- 🟡 OG Tags (تحسين المشاركة على فيسبوك وإنستغرام) -->
+  <!-- 🟡 OG -->
   <meta property="og:title" content="Shein Libya | نوفر لك خدمة الشراء من شي إن في ليبيا" />
   <meta property="og:description" content="Shein Libya | نوفر لك خدمة شراء وتتبع شحنات شي إن ونوفر أيضًا حاسبة أسعار لحساب منتجاتك" />
   <meta property="og:image" content="https://www.sheinlibya.com/favicon.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.sheinlibya.com" />
 
-  
+  <!-- ============================== -->
+  <!--        🔥 Preload & Speed      -->
+  <!-- ============================== -->
 
+  <!-- تحسين تحميل الخطوط -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+  <!-- تحميل الخط مسبقاً -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- Preload لملف JavaScript الأساسي -->
+  <link rel="preload" href="/src/main.jsx" as="script" />
+
+  <!-- ============================== -->
+
+  <!-- أيقونات -->
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#E9AB1D" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 </head>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<body>
+  <div id="root"></div>
+
+  <!-- react/vite main file -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>

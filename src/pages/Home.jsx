@@ -1,6 +1,6 @@
-/* --- كامل الكود جاهز --- */
+/* --- كامل الكود جاهز مع Lazy Loading --- */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Megaphone } from "lucide-react";
@@ -32,6 +32,9 @@ const LoginButton = () => (
     دخول
   </a>
 );
+
+/** 🔥 SVG Pin Graphic — Lazy Loaded */
+const LazyPinGraphic = React.lazy(() => import("./LazyPinGraphic"));
 
 export default function Home() {
 
@@ -73,7 +76,7 @@ export default function Home() {
 
           <p className="text-base sm:text-lg mb-6 leading-relaxed px-2 sm:px-0" style={{ color: "#4B4B4B" }}>
             مع <span className="font-semibold text-[#E9AB1D]">We Pay</span>، وكيل{" "}
-            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة, تابع شحنتك من لحظة الطلب حتى وصولها إلى باب منزلك, عبر نظام تتبع دقيق وسهل الاستخدام.
+            <span className="font-semibold">Shein</span> الرسمي في ليبيا، نوفر لك تجربة شراء وشحن مريحة وآمنة.
           </p>
 
           <Link
@@ -84,70 +87,16 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        {/* ===================== البوكس + الدبوس بالشعار ===================== */}
+        {/* ===================== Lazy Loaded SVG ===================== */}
         <motion.div
           className="flex justify-center mt-3 md:mt-0"
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
         >
-          <div className="w-full max-w-[19rem] sm:max-w-[22rem] md:max-w-[30rem] relative">
-
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" className="w-full">
-
-              {/* box */}
-              <g stroke="#CFCFCF" strokeWidth="4" fill="none" transform="translate(0,20)">
-                <path d="M85 150 L200 100 L315 150 L200 200 Z" />
-                <path d="M85 150 L85 250 L200 300 L200 200 Z" />
-                <path d="M315 150 L315 250 L200 300" />
-              </g>
-
-{/* 🔥 دبوس مكبّر والدائرة بداخله تماماً */}
-<g transform="translate(200,50)">  {/* ← رفع البوضع للأسفل */}
-  
-  {/* نبض خارجي */}
-  <circle cx="0" cy="0" r="40" stroke="#E9AB1D" strokeWidth="3" fill="none">
-    
-  </circle>
-
-  {/* رأس الدبوس — مكبّر ليستوعب الدائرة */}
-  <path
-  d="
-    M 0 -45
-    C 28 -45 48 -25 48 4
-    C 48 36 0 90 0 90
-    C 0 90 -48 36 -48 4
-    C -48 -25 -28 -45 0 -45
-    Z
-  "
-  fill="white"
-  stroke="#E9AB1D"
-  strokeWidth="4"
-/>
-
-
-  {/* نبض خارجي */}
-                <circle cx="0" cy="0" r="26" stroke="#E9AB1D" strokeWidth="3" fill="none">
-                  <animate attributeName="r" from="22" to="52" dur="1.8s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.9" to="0" dur="1.8s" repeatCount="indefinite" />
-                </circle>
-                                {/* رأس الدبوس — مكبّر ليستوعب الشعار */}
-                <circle cx="0" cy="0" r="26" fill="white" stroke="#E9AB1D" strokeWidth="3" />
-                                {/* شعار الشركة داخل الدائرة (يناسب الحجم الجديد) */}
-                <image
-                  href="/favicon-transparent.png"
-                  x="-22"
-                  y="-22"
-                  width="44"
-                  height="44"
-                />  
-
-</g>
-
-
-            </svg>
-
-          </div>
+          <Suspense fallback={<div className="w-32 h-32 animate-pulse bg-gray-200 rounded-full"></div>}>
+            <LazyPinGraphic />
+          </Suspense>
         </motion.div>
 
       </div>
