@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 
 import InstallPWA from "./components/InstallPWA";
 import BottomNav from "./components/BottomNav";
+import { Analytics } from '@vercel/analytics/react';
 
 // 🟡 الصفحات العامة
 import Home from "./pages/Home";
@@ -75,6 +76,8 @@ export default function App() {
 
       {/* 🔥 شريط التطبيق السفلي — يظهر فقط في الصفحات العامة */}
       {showPublicUI && <BottomNav />}
+            <Analytics />
+
     </div>
   );
 }
