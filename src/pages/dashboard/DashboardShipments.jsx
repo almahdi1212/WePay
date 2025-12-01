@@ -236,12 +236,9 @@ export default function DashboardShipments() {
 
     try {
       await apiRequest(
-        "/shipments/bulk-update",
-        "PUT",
-        {
-          tracking_numbers: selected,
-          status_code: Number(bulkStatus),
-        },
+        "/shipments",
+        "DELETE",
+        
         true
       );
 
