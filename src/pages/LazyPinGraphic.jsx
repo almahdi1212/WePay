@@ -41,7 +41,7 @@ export default function LazyPinGraphic() {
 
           {/* Logo inside circle */}
           <image
-            href="/favicon-transparent.png"
+            href="favicon.png"
             x="-22"
             y="-22"
             width="44"
