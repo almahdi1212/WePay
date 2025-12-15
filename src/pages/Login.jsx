@@ -67,7 +67,7 @@ export default function Login() {
     className="w-28 h-28 mx-auto mb-3 flex items-center justify-center"
   >
     <img
-      src="/favicon-transparent.png"
+      src="/favicon.png"
       alt="Logo"
       className="w-28 h-28 object-contain drop-shadow-lg"
     />

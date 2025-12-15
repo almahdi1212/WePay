@@ -49,7 +49,7 @@ export default function Sidebar() {
 <div className="mt-14 mb-10 flex flex-col items-center md:items-start">
   <div className="flex items-center gap-0.1">
   <img
-    src="/favicon-transparent.png"
+    src="/favicon.png"
     alt="Logo"
     className="w-16 h-16 object-contain relative top-[4px]"
   />
