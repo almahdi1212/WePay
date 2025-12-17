@@ -72,7 +72,7 @@ export default function Login() {
       className="w-28 h-28 object-contain drop-shadow-lg"
     />
   </motion.div>
-
+  
   <h1 className="text-2xl font-extrabold text-[#1A1A1A] mb-1">
     تسجيل الدخول
   </h1>

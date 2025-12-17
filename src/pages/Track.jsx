@@ -57,7 +57,7 @@ export default function Track() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setError("لم يتم العثور على الشحنة 😔");
+        setError("لم يتم العثور على الشحنة ");
       } else {
         setShipment(data.data);
       }
