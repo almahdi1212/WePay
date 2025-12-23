@@ -130,6 +130,9 @@ export default function DashboardShipments() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  // ✅ التحكم في توليد رقم الشحنة
+ const [autoTracking, setAutoTracking] = useState(true);
+
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,6 +141,7 @@ export default function DashboardShipments() {
   const loggedUsername = localStorage.getItem("username") || null;
 
   const [form, setForm] = useState({
+    tracking_number: "", // 👈 جديد
     customer_name: "",
     customer_whatsapp: "",
     customer_location: "",
@@ -398,16 +402,21 @@ export default function DashboardShipments() {
 
     // بناء البايلود؛ **لا نرسل user_id عند الإضافة** حتى يستخدم الباك-إند auth()->id()
     const payload = {
-      customer_name: form.customer_name || null,
-      customer_whatsapp: form.customer_whatsapp || null,
-      customer_location: form.customer_location || null,
-      price_usd: form.price_usd ? Number(form.price_usd) : null,
-      price_lyd: form.price_lyd ? Number(form.price_lyd) : null,
-      quantity: form.quantity ? Number(form.quantity) : null,
-      description: form.description || null,
-      // user_id: form.user_id ? Number(form.user_id) : null, // لا تُضمّن عند الإنشاء
-      status_code: form.status_code ? Number(form.status_code) : 1,
-    };
+  customer_name: form.customer_name || null,
+  customer_whatsapp: form.customer_whatsapp || null,
+  customer_location: form.customer_location || null,
+  price_usd: form.price_usd ? Number(form.price_usd) : null,
+  price_lyd: form.price_lyd ? Number(form.price_lyd) : null,
+  quantity: form.quantity ? Number(form.quantity) : null,
+  description: form.description || null,
+  status_code: form.status_code ? Number(form.status_code) : 1,
+};
+
+// ✅ فقط إذا كان الإدخال يدوي
+if (!editingRow && !autoTracking) {
+  payload.tracking_number = form.tracking_number;
+}
+
 
     // عند التعديل نحتفظ بالحقل user_id في البايلود كي لا نغيّره (لكن لن نسمح بتغييره عبر الواجهة)
     if (editingRow) {
@@ -516,8 +525,10 @@ export default function DashboardShipments() {
           {/* زر إضافة */}
           <button
             onClick={() => {
-              setEditingRow(null);
+              setEditingRow(null);  
+              setAutoTracking(true); // 👈 افتراضي تلقائي
               setForm({
+                tracking_number: "",
                 customer_name: "",
                 customer_whatsapp: "",
                 customer_location: "",
@@ -701,6 +712,59 @@ export default function DashboardShipments() {
             </h3>
 
             <form onSubmit={handleSave} className="space-y-3">
+              {/* ===== التحكم في رقم الشحنة ===== */}
+{!editingRow && (
+  <div className="flex items-center justify-between bg-[#fffaf0] border border-[#E9AB1D]/30 rounded-xl px-4 py-3">
+    <span className="text-sm font-semibold text-[#1A1A1A]">
+      إنشاء رقم الشحنة تلقائياً
+    </span>
+
+    <button
+  type="button"
+  onClick={() => setAutoTracking((prev) => !prev)}
+  className={`
+    relative w-14 h-7 rounded-full transition-colors duration-300
+    ${autoTracking ? "bg-[#fdecc8]" : "bg-gray-300"}
+  `}
+>
+  <span
+    className={`
+      absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-300
+      ${autoTracking
+        ? "translate-x-7 bg-[#E9AB1D]"
+        : "translate-x-1 bg-white"}
+    `}
+  />
+</button>
+
+
+  </div>
+)}
+{/* إدخال رقم الشحنة يدوياً */}
+{/* رقم الشحنة */}
+{editingRow ? (
+  <input
+    placeholder="رقم الشحنة"
+    value={form.tracking_number}
+    onChange={(e) =>
+      setForm({ ...form, tracking_number: e.target.value })
+    }
+    className="border border-[#E9AB1D]/40 rounded-lg px-3 py-2 bg-[#fffdf6]"
+    required
+  />
+) : !autoTracking ? (
+  <input
+    placeholder="رقم الشحنة (يدوي)"
+    value={form.tracking_number}
+    onChange={(e) =>
+      setForm({ ...form, tracking_number: e.target.value })
+    }
+    className="border border-[#E9AB1D]/40 rounded-lg px-3 py-2"
+    required
+  />
+) : null}
+
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input
                   placeholder="اسم الزبون"
