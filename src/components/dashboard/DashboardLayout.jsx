@@ -61,7 +61,7 @@ export default function DashboardLayout() {
 {/* يسار: عنوان We Pay Dashboard */}
 <div className="hidden md:flex items-center gap-0.1 ml-auto z-10">
   <img
-    src="/favicon-transparent.png"
+    src="/favicon.png"
     alt="Logo"
     className="w-10 h-10 object-contain -mt-0.1" // ← تكبير + خفض بسيط
   />
