@@ -4,13 +4,20 @@ export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
-  useEffect(() => {
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowPopup(true);
-    });
-  }, []);
+useEffect(() => {
+  const handler = (e) => {
+    e.preventDefault();
+    setDeferredPrompt(e);
+    setShowPopup(true);
+  };
+
+  window.addEventListener("beforeinstallprompt", handler);
+
+  return () => {
+    window.removeEventListener("beforeinstallprompt", handler);
+  };
+}, []);
+
 
   if (!showPopup) return null;
 

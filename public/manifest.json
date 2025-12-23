@@ -3,12 +3,12 @@
   "name": "WePay Libya",
   "icons": [
     {
-      "src": "/favicon-transparent.png",
+      "src": "/favicon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/favicon-transparent.png",
+      "src": "/favicon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
