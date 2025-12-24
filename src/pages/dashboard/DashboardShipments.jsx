@@ -332,16 +332,18 @@ export default function DashboardShipments() {
               onClick={() => {
                 setEditingRow(row.original);
                 setForm({
-                  customer_name: row.original.customer_name || "",
-                  customer_whatsapp: row.original.customer_whatsapp || "",
-                  customer_location: row.original.customer_location || "",
-                  price_usd: row.original.price_usd || "",
-                  price_lyd: row.original.price_lyd || "",
-                  quantity: row.original.quantity || "",
-                  description: row.original.description || "",
-                  user_id: row.original.user_id || "",
-                  status_code: row.original.status_code || 1,
-                });
+  tracking_number: row.original.tracking_number || "", // ✅ مهم
+  customer_name: row.original.customer_name || "",
+  customer_whatsapp: row.original.customer_whatsapp || "",
+  customer_location: row.original.customer_location || "",
+  price_usd: row.original.price_usd || "",
+  price_lyd: row.original.price_lyd || "",
+  quantity: row.original.quantity || "",
+  description: row.original.description || "",
+  user_id: row.original.user_id || "",
+  status_code: row.original.status_code || 1,
+});
+
                 setIsModalOpen(true);
               }}
               className="text-[#E9AB1D] hover:text-[#c98a00] transition"
@@ -402,6 +404,7 @@ export default function DashboardShipments() {
 
     // بناء البايلود؛ **لا نرسل user_id عند الإضافة** حتى يستخدم الباك-إند auth()->id()
     const payload = {
+  tracking_number: form.tracking_number || null, // ✅ جديد
   customer_name: form.customer_name || null,
   customer_whatsapp: form.customer_whatsapp || null,
   customer_location: form.customer_location || null,
@@ -411,6 +414,7 @@ export default function DashboardShipments() {
   description: form.description || null,
   status_code: form.status_code ? Number(form.status_code) : 1,
 };
+
 
 // ✅ فقط إذا كان الإدخال يدوي
 if (!editingRow && !autoTracking) {
@@ -427,7 +431,7 @@ if (!editingRow && !autoTracking) {
     try {
       if (editingRow) {
         await apiRequest(
-          `/shipments/${editingRow.tracking_number}`,
+          `/shipments/${editingRow.id}`,
           "PUT",
           payload,
           true
@@ -707,7 +711,7 @@ if (!editingRow && !autoTracking) {
           >
             <h3 className="text-lg font-semibold mb-3">
               {editingRow
-                ? `تعديل الشحنة (${editingRow.tracking_number})`
+                ? `تعديل الشحنة (${editingRow.id})`
                 : "إضافة شحنة جديدة"}
             </h3>
 
