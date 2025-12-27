@@ -174,7 +174,7 @@ export default function Support() {
           <div className="w-full h-64 rounded-2xl border border-[#E9AB1D]/40 overflow-hidden shadow-sm">
             <iframe
               title="WePay Location"
-              src="https://www.google.com/maps?q=32.906063,+13.266803&output=embed"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d418.7119686829145!2d13.2665940007954!3d32.906211590897975!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x13a891001a6e7957%3A0x6f0b8b2d6f2a1b74!2z2LTZiiDYp9mGINmE2YrYqNmK2Kc!5e0!3m2!1sen!2sus!4v1766836776281!5m2!1sen!2sus%22"
               width="100%"
               height="100%"
               style={{ border: "none" }}
